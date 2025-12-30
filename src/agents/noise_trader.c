@@ -1,4 +1,4 @@
-#include "../../include/agents/noise_trader.h"
+#include "agents/noise_trader.h"
 #include <stdlib.h>
 
 static void noise_step(agent_t *agent, timestamp_t now) {

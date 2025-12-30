@@ -1,4 +1,4 @@
-#include "../../include/sim/clock.h"
+#include "sim/clock.h"
 
 static timestamp_t current_time = 0;
 
