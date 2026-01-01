@@ -1,11 +1,26 @@
 #include "core/level_ops.h"
+#include <assert.h>
 #include <stdlib.h>
+
+static void level_assert_invariants(const price_level_t *level) {
+    /* Empty queue: head and tail must both be NULL */
+    if (level->head == NULL) {
+        assert(level->tail == NULL);
+    }
+
+    /* Non-empty queue: tail must exist and tail->next must be NULL */
+    if (level->tail != NULL) {
+        assert(level->tail->next == NULL);
+    }
+}
 
 void level_init(price_level_t *level, price_t price) {
     level->price = price;
     level->total_qty = 0;
     level->head = NULL;
     level->tail = NULL;
+
+    level_assert_invariants(level);
 }
 
 int level_is_empty(const price_level_t *level) {
@@ -28,11 +43,13 @@ int level_push(price_level_t *level, order_t *order){
         level->tail->next = new_node;
         level->tail = new_node;
         level->total_qty += order->qty;
+        level_assert_invariants(level);
         return 1;
     } else {
         level->head = new_node;
         level->tail = new_node;
         level->total_qty += order->qty;
+        level_assert_invariants(level);
         return 1;
     }
 }
@@ -48,6 +65,8 @@ order_t *level_pop(price_level_t *level) {
         level->total_qty -= o->qty;
 
         free(temp);
+
+        level_assert_invariants(level);
         return o;
     } else {
         return NULL;
