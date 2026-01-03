@@ -14,7 +14,7 @@ void pt_init(price_tree_t *t) {
 
 //FIND PRICE LEVEL
 price_level_t *pt_find(const price_tree_t *t, price_t price) {
-    price_node_t *nil = &t->nil;
+    const price_node_t *nil = &t->nil;
     price_node_t *x = t->root;
 
     while (x != nil) {
