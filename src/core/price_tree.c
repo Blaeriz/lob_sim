@@ -1,5 +1,5 @@
 #include "core/price_tree.h"
-#include "stdlib.h"
+#include <stdlib.h>
 
 void pt_init(price_tree_t *t) {
     // Initialize t->nil fields to safe defaults
@@ -67,4 +67,36 @@ int pt_insert(price_tree_t *t, price_t price, price_level_t *level) {
 
     t->size++;
     return 1;
+}
+
+//MINIMUM IN PRICE TREE
+price_level_t *pt_min(const price_tree_t *t) {
+    const price_node_t *nil = &t->nil;
+    const price_node_t *x = t->root;
+
+    if (x == nil) {
+        return NULL;
+    }
+
+    while (x->left != nil) {
+        x = x->left;
+    }
+
+    return x->level;
+}
+
+//MAXIMUM IN PRICE TREE
+price_level_t *pt_max(const price_tree_t *t) {
+    const price_node_t *nil = &t->nil;
+    const price_node_t *x = t->root;
+
+    if (x == nil) {
+        return NULL;
+    }
+
+    while (x->right != nil) {
+        x = x->right;
+    }
+
+    return x->level;
 }
