@@ -1,5 +1,6 @@
 #include "core/price_tree.h"
 #include <stdlib.h>
+#include <assert.h>
 
 void pt_init(price_tree_t *t) {
     // Initialize t->nil fields to safe defaults
@@ -99,4 +100,29 @@ price_level_t *pt_max(const price_tree_t *t) {
     }
 
     return x->level;
+}
+
+//LEFT ROTATE TREE
+static void left_rotate(price_tree_t *t, price_node_t *x) {
+    price_node_t *nil = &t->nil;
+    if (x->right != nil) {
+        price_node_t *y = x->right;
+        x->right = y->left;
+        if (y->left != nil) {
+            y->left->parent = x;
+        }
+        y->parent = x->parent;
+        if (x->parent == nil) {
+            t->root = y;
+        } else if (x == x->parent->left) {
+            x->parent->left = y;
+        } else {
+            x->parent->right = y;
+        }
+        y->left = x;
+        x->parent = y;
+    } else {
+        assert(x != nil);
+        assert(x->right != nil);
+    }
 }
