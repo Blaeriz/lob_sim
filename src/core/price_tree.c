@@ -10,6 +10,8 @@ void pt_init(price_tree_t *t) {
     t->nil.color = PT_BLACK; // Assuming BLACK is defined for nil nodes
     t->root = &t->nil;
     t->size = 0;
+    t->nil.key = 0;
+    t->nil.level = NULL;
 }
 
 
@@ -65,6 +67,8 @@ int pt_insert(price_tree_t *t, price_t price, price_level_t *level) {
     } else {
         parent->right = z;
     }
+
+    insert_fixup(t, z);
 
     t->size++;
     return 1;
@@ -144,8 +148,50 @@ static void right_rotate(price_tree_t *t, price_node_t *x) {
     } else if (x == x->parent->right) {
         x->parent->right = y;
     } else {
-        x->parent->right = y;
+        x->parent->left = y;
     }
     y->right = x;
     x->parent = y;
+}
+
+//RB TREE FIXUP
+static void insert_fixup(price_tree_t *t, price_node_t *z) {
+    while (z->parent->color == PT_RED) {
+        if (z->parent == z->parent->parent->left) {
+            price_node_t *u = z->parent->parent->right;
+
+            if (u->color == PT_RED) {
+                z->parent->color = PT_BLACK;
+                u->color = PT_BLACK;
+                z->parent->parent->color = PT_RED;
+                z = z->parent->parent;
+            } else {
+                if (z == z->parent->right) {
+                    z = z->parent;
+                    left_rotate(t, z);
+                }
+                z->parent->color = PT_BLACK;
+                z->parent->parent->color = PT_RED;
+                right_rotate(t, z->parent->parent);
+            }
+        } else {
+            price_node_t *u = z->parent->parent->left;
+
+            if (u->color == PT_RED) {
+                z->parent->color = PT_BLACK;
+                u->color = PT_BLACK;
+                z->parent->parent->color = PT_RED;
+                z = z->parent->parent;
+            } else {
+                if (z == z->parent->left) {
+                    z = z->parent;
+                    right_rotate(t, z);
+                }
+                z->parent->color = PT_BLACK;
+                z->parent->parent->color = PT_RED;
+                left_rotate(t, z->parent->parent);
+            }
+        }
+    }
+    t->root->color = PT_BLACK;
 }
