@@ -2,6 +2,11 @@
 #include <stdlib.h>
 #include <assert.h>
 
+// Forward declarations for internal helpers (needed because pt_insert calls insert_fixup)
+static void left_rotate(price_tree_t *t, price_node_t *x);
+static void right_rotate(price_tree_t *t, price_node_t *x);
+static void insert_fixup(price_tree_t *t, price_node_t *z);
+
 void pt_init(price_tree_t *t) {
     // Initialize t->nil fields to safe defaults
     t->nil.left = &t->nil;
