@@ -7,6 +7,10 @@ static void left_rotate(price_tree_t *t, price_node_t *x);
 static void right_rotate(price_tree_t *t, price_node_t *x);
 static void insert_fixup(price_tree_t *t, price_node_t *z);
 
+static void transplant(price_tree_t *t, price_node_t *u, price_node_t *v);
+static price_node_t *tree_min_node(price_tree_t *t, price_node_t *x);
+static void delete_fixup(price_tree_t *t, price_node_t *x);
+
 void pt_init(price_tree_t *t) {
     // Initialize t->nil fields to safe defaults
     t->nil.left = &t->nil;
