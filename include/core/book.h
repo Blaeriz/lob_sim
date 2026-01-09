@@ -6,8 +6,8 @@
 #include "price_tree.h"
 
 typedef struct {
-  price_tree_t *bids; /* descending prices */
-  price_tree_t *asks; /* ascending prices */
+  price_tree_t bids; /* descending prices */
+  price_tree_t asks; /* ascending prices */
 } order_book_t;
 
 /* lifecycle */
