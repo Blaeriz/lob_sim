@@ -226,8 +226,6 @@ static price_node_t *tree_min_node(price_tree_t *t, price_node_t *x) {
 }
 
 static void delete_fixup(price_tree_t *t, price_node_t *x) {
-    price_node_t *nil = &t->nil;
-
     while (x != t->root && x->color == PT_BLACK) {
         if (x == x->parent->left) {
             price_node_t *w = x->parent->right;
