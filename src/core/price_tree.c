@@ -224,3 +224,65 @@ static price_node_t *tree_min_node(price_tree_t *t, price_node_t *x) {
     while (x->left != nil) x = x->left;
     return x;
 }
+
+static void delete_fixup(price_tree_t *t, price_node_t *x) {
+    price_node_t *nil = &t->nil;
+
+    while (x != t->root && x->color == PT_BLACK) {
+        if (x == x->parent->left) {
+            price_node_t *w = x->parent->right;
+
+            if (w->color == PT_RED) {
+                w->color = PT_BLACK;
+                x->parent->color = PT_RED;
+                left_rotate(t, x->parent);
+                w = x->parent->right;
+            }
+
+            if (w->left->color == PT_BLACK && w->right->color == PT_BLACK) {
+                w->color = PT_RED;
+                x = x->parent;
+            } else {
+                if (w->right->color == PT_BLACK) {
+                    w->left->color = PT_BLACK;
+                    w->color = PT_RED;
+                    right_rotate(t, w);
+                    w = x->parent->right;
+                }
+                w->color = x->parent->color;
+                x->parent->color = PT_BLACK;
+                w->right->color = PT_BLACK;
+                left_rotate(t, x->parent);
+                x = t->root;
+            }
+        } else {
+            price_node_t *w = x->parent->left;
+
+            if (w->color == PT_RED) {
+                w->color = PT_BLACK;
+                x->parent->color = PT_RED;
+                right_rotate(t, x->parent);
+                w = x->parent->left;
+            }
+
+            if (w->right->color == PT_BLACK && w->left->color == PT_BLACK) {
+                w->color = PT_RED;
+                x = x->parent;
+            } else {
+                if (w->left->color == PT_BLACK) {
+                    w->right->color = PT_BLACK;
+                    w->color = PT_RED;
+                    left_rotate(t, w);
+                    w = x->parent->left;
+                }
+                w->color = x->parent->color;
+                x->parent->color = PT_BLACK;
+                w->left->color = PT_BLACK;
+                right_rotate(t, x->parent);
+                x = t->root;
+            }
+        }
+    }
+
+    x->color = PT_BLACK;
+}
