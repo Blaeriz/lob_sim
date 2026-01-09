@@ -72,3 +72,19 @@ order_t *level_pop(price_level_t *level) {
         return NULL;
     }
 }
+
+void level_free_queue(price_level_t *level, void (*free_order)(order_t *order)) {
+    if (!level) return;
+
+    order_node_t *cur = level->head;
+    while (cur) {
+        order_node_t *next = cur->next;
+        if (free_order && cur->order) free_order(cur->order);
+        free(cur);
+        cur = next;
+    }
+
+    level->head = NULL;
+    level->tail = NULL;
+    level->total_qty = 0;
+}
