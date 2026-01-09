@@ -347,3 +347,25 @@ int pt_remove(price_tree_t *t, price_t price) {
 
     return 1;
 }
+
+static void pt_clear_nodes(price_tree_t *t, price_node_t *n, void (*free_level)(price_level_t *)) {
+    price_node_t *nil = &t->nil;
+    if (n == nil) return;
+
+    // post-order: children first
+    pt_clear_nodes(t, n->left, free_level);
+    pt_clear_nodes(t, n->right, free_level);
+
+    if (free_level) free_level(n->level);
+    free(n);
+}
+
+void pt_clear(price_tree_t *t, void (*free_level)(price_level_t *level)) {
+    if (!t) return;
+    pt_clear_nodes(t, t->root, free_level);
+
+    // reset to empty (keep sentinel intact)
+    t->root = &t->nil;
+    t->size = 0;
+    t->nil.parent = &t->nil;
+}

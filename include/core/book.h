@@ -3,12 +3,11 @@
 
 #include "../common/types.h"
 #include "level.h"
+#include "price_tree.h"
 
 typedef struct {
-  price_level_t *bids; /* descending prices */
-  price_level_t *asks; /* ascending prices */
-  price_t best_bid;
-  price_t best_ask;
+  price_tree_t *bids; /* descending prices */
+  price_tree_t *asks; /* ascending prices */
 } order_book_t;
 
 /* lifecycle */

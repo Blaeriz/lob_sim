@@ -35,4 +35,8 @@ price_level_t *pt_max(const price_tree_t *t);
 
 int pt_remove(price_tree_t *t, price_t price);
 
+// Clear the tree in O(P). The tree frees its nodes.
+// free_level(level) is called for each stored level pointer (may be NULL).
+void pt_clear(price_tree_t *t, void (*free_level)(price_level_t *level));
+
 #endif
