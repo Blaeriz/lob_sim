@@ -204,3 +204,17 @@ static void insert_fixup(price_tree_t *t, price_node_t *z) {
     }
     t->root->color = PT_BLACK;
 }
+
+// ---- DELETE SUPPORT (RB remove) ----
+
+static void transplant(price_tree_t *t, price_node_t *u, price_node_t *v) {
+    price_node_t *nil = &t->nil;
+    if (u->parent == nil) {
+        t->root = v;
+    } else if (u == u->parent->left) {
+        u->parent->left = v;
+    } else {
+        u->parent->right = v;
+    }
+    v->parent = u->parent;
+}
