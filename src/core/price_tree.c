@@ -286,3 +286,66 @@ static void delete_fixup(price_tree_t *t, price_node_t *x) {
 
     x->color = PT_BLACK;
 }
+
+// REMOVE NODE BY PRICE (RB delete)
+// Return: 1 removed, 0 not found
+int pt_remove(price_tree_t *t, price_t price) {
+    price_node_t *nil = &t->nil;
+
+    // Find node z with key == price
+    price_node_t *z = t->root;
+    while (z != nil) {
+        if (price < z->key) {
+            z = z->left;
+        } else if (price > z->key) {
+            z = z->right;
+        } else {
+            break;
+        }
+    }
+    if (z == nil) return 0;
+
+    price_node_t *y = z;
+    pt_color_t y_original_color = y->color;
+    price_node_t *x;
+
+    if (z->left == nil) {
+        x = z->right;
+        transplant(t, z, z->right);
+    } else if (z->right == nil) {
+        x = z->left;
+        transplant(t, z, z->left);
+    } else {
+        y = tree_min_node(t, z->right);
+        y_original_color = y->color;
+        x = y->right;
+
+        if (y->parent == z) {
+            x->parent = y;
+        } else {
+            transplant(t, y, y->right);
+            y->right = z->right;
+            y->right->parent = y;
+        }
+
+        transplant(t, z, y);
+        y->left = z->left;
+        y->left->parent = y;
+        y->color = z->color;
+    }
+
+    free(z);
+    if (t->size > 0) t->size--;
+
+    if (y_original_color == PT_BLACK) {
+        delete_fixup(t, x);
+    }
+
+    // Ensure root is black; also covers empty-tree root == nil
+    t->root->color = PT_BLACK;
+
+    // Keep NIL parent self-linked (hygiene)
+    nil->parent = nil;
+
+    return 1;
+}
