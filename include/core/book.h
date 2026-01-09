@@ -1,7 +1,7 @@
 #ifndef BOOK_H
 #define BOOK_H
 
-#include "../common/types.h"
+#include "common/types.h"
 #include "level.h"
 #include "price_tree.h"
 

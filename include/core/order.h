@@ -1,7 +1,7 @@
 #ifndef ORDER_H
 #define ORDER_H
 
-#include "../common/types.h"
+#include "common/types.h"
 
 typedef enum { SIDE_BUY = 1, SIDE_SELL = -1 } side_t;
 
