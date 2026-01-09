@@ -218,3 +218,9 @@ static void transplant(price_tree_t *t, price_node_t *u, price_node_t *v) {
     }
     v->parent = u->parent;
 }
+
+static price_node_t *tree_min_node(price_tree_t *t, price_node_t *x) {
+    price_node_t *nil = &t->nil;
+    while (x->left != nil) x = x->left;
+    return x;
+}
