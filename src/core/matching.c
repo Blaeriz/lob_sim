@@ -6,13 +6,15 @@
 qty_t match_order(order_book_t *book, order_t *incoming, trade_t *trades, size_t max_trades) {
   size_t trade_count = 0;
   price_tree_t *tree;
-  side_t side = incoming->side;
+  side_t side;
 
   // 1. Validate inputs (return 0 if book/incoming/trades is NULL or max_trades is 0)
 
   if (!book || !incoming || !trades || max_trades == 0) {
     return 0;
   }
+
+  side = incoming->side;
 
   // 2. Pick the opposite tree based on incoming->side
 
