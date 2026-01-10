@@ -83,8 +83,6 @@ qty_t match_order(order_book_t *book, order_t *incoming, trade_t *trades, size_t
     // d. Clean up empty level
     if (level_is_empty(best)) {
       // Remove from tree and free the level
-      // Hint: pt_remove(tree, ???) — what key does pt_remove take?
-      // Hint: then free(best)
       pt_remove(tree, best->price);
       free(best);
     }
