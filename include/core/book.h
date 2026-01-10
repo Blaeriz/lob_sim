@@ -2,8 +2,8 @@
 #define BOOK_H
 
 #include "common/types.h"
-#include "level.h"
-#include "price_tree.h"
+#include "core/level.h"
+#include "core/price_tree.h"
 
 typedef struct {
   price_tree_t bids; /* descending prices */
