@@ -14,3 +14,50 @@ void om_init(order_map_t *map, size_t num_buckets) {
   map->count = 0;
   map->num_buckets = num_buckets;
 }
+
+int om_insert(order_map_t *map, order_id_t id, order_t *order, side_t side, price_t price) {
+  // 1. Validate inputs (return -1 if invalid)
+  if (!map) {
+    return -1;
+  }
+  
+  // 2. Calculate bucket index
+  uint64_t idx = id % map->num_buckets;
+
+  // 3. Allocate new om_entry_t node
+  om_entry_t *z = malloc(sizeof(om_entry_t));
+  // 4. Fill in the node fields (key, order, side, price)
+  z->key = id;
+  z->order = order;
+  z->price = price;
+  z->side = side;
+  // 5. Prepend to bucket's linked list (new node becomes head)
+  z->next = map->buckets[idx];
+  map->buckets[idx] = z;
+  // 6. Increment map->count
+  map->count++;
+  // 7. Return 0 for success
+  return 0;
+}
+
+om_entry_t *om_find(order_map_t *map, order_id_t id) {
+  // 1. Validate input (return NULL if invalid)
+  if (!map) {
+    return NULL;
+  }
+  // 2. Calculate bucket index
+  uint64_t idx = id % map->num_buckets;
+  // 3. Walk the linked list in that bucket
+  //    - If node->key == id, return that node
+  om_entry_t *curr = map->buckets[idx];
+  while (curr != NULL) {
+    if (curr->key == id) {
+        return curr;
+    } else {
+        curr = curr->next;
+    }
+  }
+  
+  // 4. Return NULL if not found
+  return NULL;
+}
