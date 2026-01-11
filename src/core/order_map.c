@@ -61,3 +61,43 @@ om_entry_t *om_find(order_map_t *map, order_id_t id) {
   // 4. Return NULL if not found
   return NULL;
 }
+
+int om_remove(order_map_t *map, order_id_t id) {
+  // 1. Validate input (return -1 if invalid)
+  if (!map) return -1;
+  // 2. Calculate bucket index
+  uint64_t idx = id % map->num_buckets;
+  // 3. Handle special case: if head node matches, update bucket head
+  om_entry_t *curr = map->buckets[idx];
+
+  if (!curr) {
+    return -1;
+  }
+
+  if (curr->key == id) {
+    map->buckets[idx] = map->buckets[idx]->next;
+    free(curr);
+    map->count--;
+    return 0;
+  }
+  // 4. Otherwise, walk list keeping track of previous node
+  //    - When found: prev->next = curr->next (unlink curr)
+  //    - free(curr)
+  om_entry_t *prev = curr;
+  while (curr != NULL) {
+    if (curr->key == id) {
+      prev->next = curr->next;
+      free(curr);
+      map->count--;
+      return 0;
+    } else {
+      prev = curr;
+      curr = curr->next;
+    }
+  }
+  
+  // 5. Decrement map->count
+  
+  // 6. Return 0 on success, -1 if not found
+  return -1;
+}
