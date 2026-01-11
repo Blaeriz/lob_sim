@@ -102,3 +102,31 @@ int om_remove(order_map_t *map, order_id_t id) {
   // 6. Return 0 on success, -1 if not found
   return -1;
 }
+
+void om_free(order_map_t *map) {
+  // 1. Validate input
+  if (!map) {
+    return;
+  }
+  
+  // 2. For each bucket:
+  //    - Walk the linked list and free each node
+  size_t size = map->num_buckets;
+
+  for (size_t i = 0; i < size; i++) {
+    om_entry_t *curr = map->buckets[i];
+    while (curr != NULL) {
+      om_entry_t *next = curr->next;
+      free(curr);
+      curr = next;
+    }
+  }
+  
+  // 3. Free the buckets array itself
+  free(map->buckets);
+  // 4. Reset map fields (optional but good practice)
+
+  map->buckets = NULL;
+  map->count = 0;
+  map->num_buckets = 0;
+}
