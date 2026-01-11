@@ -84,6 +84,7 @@ int om_remove(order_map_t *map, order_id_t id) {
   //    - When found: prev->next = curr->next (unlink curr)
   //    - free(curr)
   om_entry_t *prev = curr;
+  curr = curr->next;
   while (curr != NULL) {
     if (curr->key == id) {
       prev->next = curr->next;
