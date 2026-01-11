@@ -317,7 +317,7 @@ static void test_many_entries(void) {
     om_insert(&map, i + 1, orders[i], orders[i]->side, orders[i]->price);
   }
 
-  assert(map.count == N);
+  assert(map.count == (size_t)N);
 
   // Verify all findable
   for (int i = 0; i < N; i++) {
@@ -332,7 +332,7 @@ static void test_many_entries(void) {
     assert(rc == 0);
   }
 
-  assert(map.count == N / 2);
+  assert(map.count == (size_t)(N / 2));
 
   // Verify removals
   for (int i = 0; i < N; i++) {
