@@ -15,4 +15,6 @@ order_t *level_pop(price_level_t *level);
 
 void level_free_queue(price_level_t *level, void (*free_order)(order_t *order));
 
+int level_remove(price_level_t *level, order_t *order);
+
 #endif

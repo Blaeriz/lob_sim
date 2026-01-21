@@ -4,10 +4,12 @@
 #include "common/types.h"
 #include "core/level.h"
 #include "core/price_tree.h"
+#include "core/order_map.h"
 
 typedef struct {
   price_tree_t bids; /* descending prices */
   price_tree_t asks; /* ascending prices */
+  order_map_t orders;
 } order_book_t;
 
 /* lifecycle */

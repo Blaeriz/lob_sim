@@ -124,8 +124,8 @@ void om_free(order_map_t *map) {
   
   // 3. Free the buckets array itself
   free(map->buckets);
+  
   // 4. Reset map fields (optional but good practice)
-
   map->buckets = NULL;
   map->count = 0;
   map->num_buckets = 0;

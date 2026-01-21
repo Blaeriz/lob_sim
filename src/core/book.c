@@ -7,6 +7,7 @@
 void book_init(order_book_t *book) {
   pt_init(&book->bids);
   pt_init(&book->asks);
+  om_init(&book->orders, 65536);
 }
 
 static void free_level_payload(price_level_t *lvl) {
@@ -23,6 +24,7 @@ void book_free(order_book_t *book) {
 
   pt_clear(&book->bids, free_level_payload);
   pt_clear(&book->asks, free_level_payload);
+  om_free(&book->orders);
 }
 
 void book_add_order(order_book_t *book, order_t *order) {
@@ -47,9 +49,36 @@ void book_add_order(order_book_t *book, order_t *order) {
   }
 
   level_push(lvl, order);
+  om_insert(&book->orders, order->id, order, order->side, order->price);
 }
 
 void book_remove_order(order_book_t *book, order_id_t id) {
-  (void)book;
-  (void)id;
+  if (!book) {
+    return;
+  }
+  
+  // 1. Find the order in the map
+  om_entry_t *entry = om_find(&book->orders, id);
+  if (!entry) {
+    return;
+  }
+
+  // 2. Get the tree (bids or asks based on side)
+  price_tree_t *tree = (entry->side == SIDE_BUY) ? &book->bids : &book->asks;
+
+  // 3. Find the level at that price
+  price_level_t *lvl = pt_find(tree, entry->price);
+
+  // 4. Remove the order from the level's queue
+  level_remove(lvl, entry->order);
+  
+  // 5. If level is empty, remove from tree and free level
+  if (level_is_empty(lvl)) {
+    pt_remove(tree, entry->price);
+    free(lvl);
+  }
+
+  // 6. Remove from order map
+  om_remove(&book->orders, id);
 }
+

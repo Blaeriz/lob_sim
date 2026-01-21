@@ -88,3 +88,63 @@ void level_free_queue(price_level_t *level, void (*free_order)(order_t *order)) 
     level->tail = NULL;
     level->total_qty = 0;
 }
+
+int level_remove(price_level_t *level, order_t *order) {
+  // 1. Validate inputs (return -1 if invalid)
+  if(!level || !order) {
+    return -1;
+  }
+  // 2. Handle empty list
+  if (level->head ==  NULL) {
+    return -1;
+  }
+  // 3. Special case: head matches
+  //    - Update level->head
+  //    - If head was also tail, update level->tail to NULL
+  //    - Decrement level->total_qty by order->qty
+  //    - Free the node (NOT the order — caller owns it)
+  //    - Return 0
+  if (level->head->order == order) {
+    order_node_t *t = level->head;
+    if (level->head == level->tail) {
+      level->head = level->tail = NULL;
+    } else {
+        level->head = level->head->next;
+    }
+    level->total_qty -= order->qty;
+    free(t);
+
+    return 0;
+  }
+  
+  // 4. Walk list with prev/curr pointers
+  //    - If curr->order == order:
+  //      - prev->next = curr->next
+  //      - If curr was tail, update level->tail = prev
+  //      - Decrement level->total_qty
+  //      - Free the node
+  //      - Return 0
+  order_node_t *prev = level->head;
+  order_node_t *curr = level->head->next;
+
+  while (curr != NULL) {
+    if (curr->order == order) {
+      order_node_t *temp = curr;
+      prev->next = curr->next;
+      if (curr == level->tail) {
+        level->tail = prev;
+      }
+      level->total_qty -= order->qty;
+      free(temp);
+
+      return 0;
+    } else {
+      prev = curr;
+      curr = curr->next;
+    }
+  }
+  
+  // 5. Return -1 if not found
+
+  return -1;
+}
