@@ -1,3 +1,5 @@
+#define _DEFAULT_SOURCE  // for usleep on Linux
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
