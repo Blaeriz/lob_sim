@@ -2,101 +2,110 @@
 
 ## Overview
 
-This document outlines the remaining work needed to complete the Limit Order Book Simulator. The project has a solid foundation with core order book mechanics implemented, but the simulation layer and agent behaviors need development.
+This document outlines the remaining work needed to complete the Limit Order Book Simulator. The project has a solid foundation with core order book mechanics implemented, and the simulator backbone is now complete.
 
 ---
 
-## 1. Simulator Implementation (High Priority)
+## 1. Simulator Implementation ✅ COMPLETE
 
 **File**: `src/sim/simulator.c`
 
-The simulator is currently stubbed out. This is the backbone that drives the entire simulation.
+### 1.1 Simulator State Management ✅
 
-### 1.1 Simulator State Management
-
-Create internal state to track:
-- [ ] Pointer to the order book
-- [ ] Array/list of registered agents
-- [ ] Current simulation time
-- [ ] Event queue (priority queue ordered by timestamp)
-- [ ] Trade history buffer
-- [ ] Statistics collector
+- [x] Pointer to the order book
+- [x] Array/list of registered agents
+- [x] Current simulation time
+- [x] Time step (`dt`) for simulation loop
+- [ ] Event queue (priority queue ordered by timestamp) — *deferred for event-driven version*
+- [ ] Trade history buffer — *optional enhancement*
+- [ ] Statistics collector — *see section 4*
 
 ```c
-// Suggested internal state structure
-typedef struct {
+// Implemented structure
+typedef struct simulator_t {
     order_book_t *book;
     agent_t **agents;
     size_t agent_count;
     size_t agent_capacity;
     timestamp_t current_time;
-    // event_queue_t events;  // if using event-driven
-} simulator_state_t;
+    timestamp_t dt;
+} simulator_t;
 ```
 
-### 1.2 Implement `simulator_init()`
+### 1.2 `simulator_init()` ✅
 
-- [ ] Allocate and initialize simulator state
-- [ ] Store reference to order book
-- [ ] Initialize agent array
-- [ ] Reset time to 0
-- [ ] Initialize statistics module
+- [x] Allocate and initialize simulator state
+- [x] Store reference to order book
+- [x] Initialize agent array (dynamic, starts at capacity 10)
+- [x] Reset time to 0
+- [x] Set default dt = 1
+- [ ] Initialize statistics module — *see section 4*
 
-### 1.3 Implement `simulator_add_agent()`
+### 1.3 `simulator_add_agent()` ✅
 
-- [ ] Add agent pointer to internal agent list
-- [ ] Grow array if needed (dynamic resizing)
-- [ ] Validate agent is not NULL
+- [x] Add agent pointer to internal agent list
+- [x] Grow array if needed (doubles capacity via realloc)
+- [x] Validate agent is not NULL
+- [x] Safe realloc pattern with temp pointer
 
-### 1.4 Implement `simulator_run()`
+### 1.4 `simulator_run()` ✅
 
-Two design options:
+Implemented **time-stepped simulation**:
+- [x] Loop while `current_time < end_time`
+- [x] Call each agent's `step(agent, book, current_time)`
+- [x] Progress printing every 1000 ticks
+- [x] Time advancement by `dt`
 
-**Option A: Time-stepped simulation (simpler)**
-```c
-for (timestamp_t t = 0; t < end_time; t++) {
-    for (size_t i = 0; i < agent_count; i++) {
-        agents[i]->step(agents[i], t);
-    }
-}
-```
+**Future enhancement (not implemented):**
+- [ ] Event-driven simulation with priority queue
 
-**Option B: Event-driven simulation (more realistic)**
-- [ ] Use a priority queue of events
-- [ ] Process events in timestamp order
-- [ ] Agents schedule their next action as events
+### 1.5 `simulator_free()` ✅
 
-### 1.5 Order Submission Interface
+- [x] Free agents array
+- [x] Reset all pointers to NULL
+- [x] Reset counts to 0
 
-Agents need a way to submit orders. Add functions:
-- [ ] `simulator_submit_order(order_t *order)` — runs matching, adds remainder to book
-- [ ] `simulator_cancel_order(order_id_t id)` — removes order from book
-- [ ] Generate unique order IDs internally
+### 1.6 Order Submission Interface (Future)
+
+Agents currently submit orders directly via `book_add_order()`. Optional enhancement:
+- [ ] `simulator_submit_order(order_t *order)` — centralized order submission
+- [ ] `simulator_cancel_order(order_id_t id)` — centralized cancellation
+- [ ] Global order ID generation
 
 ---
 
-## 2. Agent Behaviors (Medium Priority)
+## 2. Agent Behaviors (In Progress)
 
 All agents currently have empty `step()` functions.
 
-### 2.1 Noise Trader (`src/agents/noise_trader.c`)
+### 2.1 Noise Trader (`src/agents/noise_trader.c`) — IN PROGRESS
 
 **Purpose**: Generates random market activity (liquidity provider/taker)
 
-- [ ] Define state structure:
-  ```c
-  typedef struct {
-      double order_probability;  // chance of submitting per step
-      price_t price_range;       // deviation from mid-price
-      qty_t max_qty;
-  } noise_trader_state_t;
-  ```
-- [ ] Implement `noise_step()`:
-  - [ ] With some probability, generate a random order
-  - [ ] Randomly choose BUY or SELL
-  - [ ] Pick price: mid-price ± random offset
-  - [ ] Pick quantity: random within range
-  - [ ] Submit order via simulator
+**State structure**: ✅ COMPLETE
+```c
+typedef struct {
+    order_id_t next_order_id;    // counter for unique IDs
+    double act_probability;       // chance of acting per tick (default: 0.1)
+    price_t price_range;          // deviation from mid-price (default: 10)
+    qty_t min_qty;                // minimum order size (default: 1)
+    qty_t max_qty;                // maximum order size (default: 10)
+    unsigned int rng_seed;        // for rand_r() reproducibility
+} noise_trader_state_t;
+```
+
+**`noise_trader_create()`**: ✅ COMPLETE
+- [x] Allocate agent and state
+- [x] Initialize all state fields with defaults
+- [x] Proper error handling and memory cleanup
+
+**`noise_step()`**: ⏳ TODO
+- [ ] Decide whether to act (probability roll)
+- [ ] Randomly choose BUY or SELL
+- [ ] Get mid-price from book (need helper function)
+- [ ] Calculate price with random offset
+- [ ] Calculate random quantity
+- [ ] Create and submit order
 
 ### 2.2 Market Maker (`src/agents/market_maker.c`)
 
@@ -276,21 +285,44 @@ Expand `event_type_t` if needed:
 
 ## Suggested Order of Implementation
 
-| Phase | Task | Effort |
-|-------|------|--------|
-| 1 | Simulator state + basic `run()` loop | 2-3 hours |
-| 2 | `simulator_submit_order()` integration | 1-2 hours |
-| 3 | Noise trader implementation | 1-2 hours |
-| 4 | Basic statistics output | 1 hour |
-| 5 | Market maker implementation | 2-3 hours |
-| 6 | Informed trader implementation | 1-2 hours |
-| 7 | Configuration loading | 2-3 hours |
-| 8 | Event-driven simulation (optional) | 3-4 hours |
+| Phase | Task | Effort | Status |
+|-------|------|--------|--------|
+| 1 | Simulator state + basic `run()` loop | 2-3 hours | ✅ DONE |
+| 2 | Noise trader state + create | 1 hour | ✅ DONE |
+| 3 | Noise trader step function | 1-2 hours | ⏳ IN PROGRESS |
+| 4 | Helper: `book_best_bid/ask` functions | 30 min | TODO |
+| 5 | Basic statistics output | 1 hour | TODO |
+| 6 | Market maker implementation | 2-3 hours | TODO |
+| 7 | Informed trader implementation | 1-2 hours | TODO |
+| 8 | Configuration loading | 2-3 hours | TODO |
+| 9 | Event-driven simulation (optional) | 3-4 hours | TODO |
 
 ---
 
 ## Notes
 
 - The core order book (`book.c`, `matching.c`, `price_tree.c`) is **complete and tested**
-- Focus on getting a minimal working simulation first, then iterate
+- The simulator backbone is **complete** (time-stepped approach)
+- Noise trader state and creation is **complete**, step function in progress
+- Next: implement `noise_step()` and helper functions for getting best bid/ask
 - Consider adding a random number generator utility for reproducible simulations
+
+---
+
+## Recent Progress (Updated: Jan 30, 2026)
+
+### Completed Today:
+1. **Simulator Implementation** — full time-stepped simulator with:
+   - `simulator_init()` — setup with dynamic agent array
+   - `simulator_add_agent()` — with automatic capacity growth
+   - `simulator_run()` — main loop calling agent steps
+   - `simulator_free()` — proper cleanup
+
+2. **Noise Trader Foundation**:
+   - State structure with all needed fields
+   - `noise_trader_create()` with proper memory management
+
+### Next Steps:
+1. Implement `noise_step()` — the actual trading logic
+2. Add `book_best_bid()` / `book_best_ask()` helper functions
+3. Test end-to-end simulation flow
