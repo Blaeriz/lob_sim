@@ -1,12 +1,13 @@
 #ifndef AGENT_H
 #define AGENT_H
 
-#include "../common/types.h"
-#include "../core/order.h"
+#include "common/types.h"
+#include "core/order.h"
+#include "core/book.h"
 
 typedef struct agent agent_t;
 
-typedef void (*agent_step_fn)(agent_t *agent, timestamp_t now);
+typedef void (*agent_step_fn)(agent_t *agent, order_book_t *book,  timestamp_t now);
 
 struct agent {
   agent_id_t id;
