@@ -68,3 +68,16 @@ void simulator_run(timestamp_t end_time) {
 
     printf("Simulation complete at time %lu\n", g_sim.current_time);
 }
+
+void simulator_free() {
+
+    if (g_sim.agents) {
+        free(g_sim.agents);
+    }
+
+    g_sim.agents = NULL;
+    g_sim.book = NULL;
+    
+    g_sim.agent_count = 0;
+    g_sim.agent_capacity = 0;
+}
