@@ -1,7 +1,9 @@
+#define _GNU_SOURCE
 #include "agents/noise_trader.h"
 #include "core/book.h"
 #include "core/price_tree.h"
 #include "core/order.h"
+#include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -72,6 +74,9 @@ static void noise_step(agent_t *agent, order_book_t *book, timestamp_t now) {
 
   // INCREMENT ID
   state->next_order_id++;
+
+  printf("NoiseTrader %lu: %s %ld @ %ld\n", agent->id,
+       side == SIDE_BUY ? "BUY" : "SELL", qty, price);
 }
 
 agent_t *noise_trader_create(agent_id_t id) {
