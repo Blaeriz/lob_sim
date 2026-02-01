@@ -20,8 +20,79 @@ typedef struct {
 
 
 static void mm_step(agent_t *agent, order_book_t *book, timestamp_t now) {
-  (void)agent;
-  (void)now;
+  market_maker_state_t *state = agent->state;
+
+  if (state->active_bid_id != 0) {
+    book_remove_order(book, state->active_bid_id);
+    state->active_bid_id = 0;
+  }
+
+  if (state->active_ask_id != 0) {
+    book_remove_order(book, state->active_ask_id);
+    state->active_ask_id = 0;
+  }
+
+  // MID PRICE
+
+  price_level_t *bid_level = pt_max(&book->bids);
+  price_level_t *ask_level = pt_min(&book->asks);
+
+  price_t mid_price;
+
+  if (bid_level && ask_level) {
+    mid_price = (bid_level->price + ask_level->price) / 2;
+  } else if (bid_level) {
+    mid_price = bid_level->price;
+  } else if (ask_level) {
+    mid_price = ask_level->price;
+  } else {
+    mid_price = 1000; // DEF
+  }
+
+  // PRICES
+
+  price_t bid_price = mid_price - state->half_spread;
+  price_t ask_price = mid_price + state->half_spread;
+
+  // INVENTORY SKEW
+
+  qty_t skew = state->inventory / 10;
+  bid_price -= skew;
+  ask_price += skew;
+
+  // POSITIVE PRICING
+
+  if (bid_price < 1) { bid_price = 1; }
+  if (ask_price < 1) { ask_price = 1; }
+
+  // POST BID
+
+  if (state->inventory < state->max_inventory) {
+    order_t bid;
+    bid.id = state->next_order_id++;
+    bid.side = SIDE_BUY;
+    bid.type = ORDER_LIMIT;
+    bid.price = bid_price;
+    bid.qty = state->order_qty;
+    bid.ts = now;
+
+    book_add_order(book, &bid);
+    state->active_bid_id = bid.id;
+  }
+
+  // POST ASK
+  if (state->inventory > -state->max_inventory) {
+    order_t ask;
+    ask.id = state->next_order_id++;
+    ask.side = SIDE_SELL;
+    ask.type = ORDER_LIMIT;
+    ask.price = ask_price;
+    ask.qty = state->order_qty;
+    ask.ts = now;
+
+    book_add_order(book, &ask);
+    state->active_ask_id = ask.id;
+  }
 }
 
 agent_t *market_maker_create(agent_id_t id) {
