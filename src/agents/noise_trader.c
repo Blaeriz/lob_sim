@@ -61,16 +61,18 @@ static void noise_step(agent_t *agent, order_book_t *book, timestamp_t now) {
   qty_t qty = state->min_qty + ((rand_r(&state->rng_seed)) % qty_range);
 
   // BUILD ORDER
-  order_t order;
-  order.id = state->next_order_id;
-  order.side = side;
-  order.type = ORDER_LIMIT;
-  order.price = price;
-  order.qty = qty;
-  order.ts = now;
+  order_t *order = malloc(sizeof(order_t));
+  if (!order) return;
+
+  order->id = state->next_order_id;
+  order->side = side;
+  order->type = ORDER_LIMIT;
+  order->price = price;
+  order->qty = qty;
+  order->ts = now;
 
   // SUBMIT
-  book_add_order(book, &order);
+  book_add_order(book, order);
 
   // INCREMENT ID
   state->next_order_id++;

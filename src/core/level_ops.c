@@ -55,22 +55,20 @@ int level_push(price_level_t *level, order_t *order){
 }
 
 order_t *level_pop(price_level_t *level) {
-    if(level->head){
-        order_node_t *temp = level->head;
-        order_t *o = temp->order;
-        level->head = level->head->next;
-        if(!(level->head)){
-            level->tail = NULL;
-        }
-        level->total_qty -= o->qty;
+  level_assert_invariants(level);
+  if (!level->head) { return NULL; }
+  order_node_t *temp = level->head;
+  order_t *o = temp->order;
+  level->head = level->head->next;
+  if(!(level->head)){
+      level->tail = NULL;
+  }
+  //level->total_qty -= o->qty;
 
-        free(temp);
+  free(temp);
 
-        level_assert_invariants(level);
-        return o;
-    } else {
-        return NULL;
-    }
+  level_assert_invariants(level);
+  return o;
 }
 
 void level_free_queue(price_level_t *level, void (*free_order)(order_t *order)) {

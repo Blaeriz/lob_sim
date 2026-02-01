@@ -68,30 +68,34 @@ static void mm_step(agent_t *agent, order_book_t *book, timestamp_t now) {
   // POST BID
 
   if (state->inventory < state->max_inventory) {
-    order_t bid;
-    bid.id = state->next_order_id++;
-    bid.side = SIDE_BUY;
-    bid.type = ORDER_LIMIT;
-    bid.price = bid_price;
-    bid.qty = state->order_qty;
-    bid.ts = now;
-
-    book_add_order(book, &bid);
-    state->active_bid_id = bid.id;
+    order_t *bid = malloc(sizeof(order_t));
+    if (bid) {
+      bid->id = state->next_order_id++;
+      bid->side = SIDE_BUY;
+      bid->type = ORDER_LIMIT;
+      bid->price = bid_price;
+      bid->qty = state->order_qty;
+      bid->ts = now;
+      
+      book_add_order(book, bid);
+      state->active_bid_id = bid->id;
+    }
   }
 
   // POST ASK
   if (state->inventory > -state->max_inventory) {
-    order_t ask;
-    ask.id = state->next_order_id++;
-    ask.side = SIDE_SELL;
-    ask.type = ORDER_LIMIT;
-    ask.price = ask_price;
-    ask.qty = state->order_qty;
-    ask.ts = now;
-
-    book_add_order(book, &ask);
-    state->active_ask_id = ask.id;
+    order_t *ask = malloc(sizeof(order_t));
+    if (ask) {
+      ask->id = state->next_order_id++;
+      ask->side = SIDE_SELL;
+      ask->type = ORDER_LIMIT;
+      ask->price = ask_price;
+      ask->qty = state->order_qty;
+      ask->ts = now;
+      
+      book_add_order(book, ask);
+      state->active_ask_id = ask->id;
+    }
   }
 }
 

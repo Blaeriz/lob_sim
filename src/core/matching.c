@@ -70,6 +70,9 @@ qty_t match_order(order_book_t *book, order_t *incoming, trade_t *trades, size_t
         trades[trade_count].buy_id = resting->id;
         trades[trade_count].sell_id = incoming->id;
       }
+
+      best->total_qty -= fill;
+
       // 4. Decrement quantities:
       incoming->qty -= fill;
       resting->qty -= fill;
