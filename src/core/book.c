@@ -3,6 +3,8 @@
 
 #include "core/book.h"
 #include "core/level_ops.h"
+#include "core/trade.h"
+#include "core/matching.h"
 
 void book_init(order_book_t *book) {
   pt_init(&book->bids);
@@ -29,6 +31,16 @@ void book_free(order_book_t *book) {
 
 void book_add_order(order_book_t *book, order_t *order) {
   if (!book || !order) return;
+
+  // MATCH FIRST
+  trade_t trades[100];
+  match_order(book, order, trades, 100);
+
+  // IF FILLED, FREE ORDER
+  if (order->qty == 0) {
+    free(order);
+    return;
+  }
 
   price_tree_t *tree = (order->side == SIDE_BUY) ? &book->bids : &book->asks;
 
