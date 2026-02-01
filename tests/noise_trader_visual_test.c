@@ -116,9 +116,10 @@ int main(void) {
     book_init(&book);
     simulator_init(&book);
     int num_agents = 3;
+    agent_t *agents[num_agents];
     for (int i = 0; i < num_agents; ++i) {
-        agent_t *nt = noise_trader_create(i + 1);
-        simulator_add_agent(nt);
+        agents[i] = noise_trader_create(i + 1);
+        simulator_add_agent(agents[i]);
     }
     int total_ticks = 5000;
     int display_every = 100;
@@ -129,6 +130,11 @@ int main(void) {
         print_book(&book, msg);
         usleep(100000); // 0.1s delay for animation
     }
+
+    for (int i = 0; i < num_agents; i++) {
+        noise_trader_destroy(agents[i]);
+    }
+
     simulator_free();
     book_free(&book);
     return 0;
