@@ -102,3 +102,15 @@ agent_t *noise_trader_create(agent_id_t id) {
   a->state = agent_state;
   return a;
 }
+
+void noise_trader_destroy(agent_t *agent) {
+  if (!agent) {
+    return;
+  }
+
+  if (agent->state) {
+    free(agent->state);
+  }
+
+  free(agent);
+}
