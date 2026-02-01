@@ -1,8 +1,9 @@
 #include "agents/informed_trader.h"
 #include <stdlib.h>
 
-static void informed_step(agent_t *agent, timestamp_t now) {
+static void informed_step(agent_t *agent, order_book_t *book, timestamp_t now) {
   (void)agent;
+  (void)book;
   (void)now;
 }
 

@@ -22,17 +22,6 @@
 
 #define MAX_DISPLAY_LEVELS 8
 
-// Helper to calculate total qty by walking the order list
-static qty_t calc_total_qty(price_level_t *lvl) {
-    qty_t total = 0;
-    order_node_t *node = lvl->head;
-    while (node) {
-        total += node->order->qty;
-        node = node->next;
-    }
-    return total;
-}
-
 // Helper to count orders in a level
 static size_t count_orders(price_level_t *lvl) {
     size_t count = 0;
@@ -75,7 +64,7 @@ static void print_book(order_book_t *book, const char *msg, int num_noise, int n
         lvl = pt_find(&book->asks, ask_prices[i]);
         if (lvl) {
             printf(COLOR_RED "                                    %4ld @ %-6ld [%zu orders]\n" COLOR_RESET,
-                   calc_total_qty(lvl), lvl->price, count_orders(lvl));
+                   lvl->total_qty, lvl->price, count_orders(lvl));
         }
     }
 
@@ -108,7 +97,7 @@ static void print_book(order_book_t *book, const char *msg, int num_noise, int n
         lvl = pt_find(&book->bids, bid_prices[i]);
         if (lvl) {
             printf(COLOR_GREEN "          %4ld @ %-6ld [%zu orders]\n" COLOR_RESET,
-                   calc_total_qty(lvl), lvl->price, count_orders(lvl));
+                   lvl->total_qty, lvl->price, count_orders(lvl));
         }
     }
 
