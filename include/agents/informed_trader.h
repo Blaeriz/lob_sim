@@ -4,5 +4,6 @@
 #include "agent.h"
 
 agent_t *informed_trader_create(agent_id_t id);
+void informed_trader_destroy(agent_t *agent);
 
 #endif
