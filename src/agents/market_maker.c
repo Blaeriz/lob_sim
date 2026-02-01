@@ -1,7 +1,24 @@
 #include "agents/market_maker.h"
+#include "core/book.h"
+#include "core/price_tree.h"
+#include "core/order.h"
+#include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
-static void mm_step(agent_t *agent, timestamp_t now) {
+typedef struct {
+  order_id_t next_order_id;
+  unsigned int rng_seed;
+  price_t half_spread;
+  qty_t order_qty;
+  qty_t inventory;
+  qty_t max_inventory;
+  order_id_t active_bid_id;
+  order_id_t active_ask_id;
+} marker_maker_state_t;
+
+
+static void mm_step(agent_t *agent, order_book_t *book, timestamp_t now) {
   (void)agent;
   (void)now;
 }
