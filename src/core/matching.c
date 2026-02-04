@@ -1,5 +1,6 @@
 #include "core/matching.h"
 #include "core/level_ops.h"
+#include "sim/stats.h"
 #include <stdlib.h>
 
 
@@ -61,6 +62,7 @@ qty_t match_order(order_book_t *book, order_t *incoming, trade_t *trades, size_t
       trades[trade_count].price = resting->price;
       trades[trade_count].qty = fill;
       trades[trade_count].ts = incoming->ts;
+      stats_on_trade(resting->price, fill);
       
       // Now figure out buy_id and sell_id:
       if (side == SIDE_BUY) {

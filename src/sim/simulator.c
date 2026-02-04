@@ -59,14 +59,14 @@ void simulator_run(timestamp_t end_time) {
             }
         }
 
-        if (g_sim.current_time % 1000 == 0) {
-            printf("Time: %lu\n", g_sim.current_time);
-        }
+        // if (g_sim.current_time % 1000 == 0) {
+        //     printf("Time: %lu\n", g_sim.current_time);
+        // }
 
         g_sim.current_time += g_sim.dt;
     }
 
-    printf("Simulation complete at time %lu\n", g_sim.current_time);
+    //printf("Simulation complete at time %lu\n", g_sim.current_time);
 }
 
 void simulator_free() {

@@ -1,9 +1,9 @@
 #ifndef EVENT_H
 #define EVENT_H
 
-#include "../common/types.h"
-#include "../core/order.h"
-#include "../core/trade.h"
+#include "common/types.h"
+#include "core/order.h"
+#include "core/trade.h"
 
 typedef enum { EVENT_ORDER, EVENT_CANCEL, EVENT_TRADE } event_type_t;
 
