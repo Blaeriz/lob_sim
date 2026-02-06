@@ -6,3 +6,8 @@ bin/
 # Local notes
 docs/
 
+# FILES
+perf.data
+perf.data.old
+RESUME_BULLETS.md
+

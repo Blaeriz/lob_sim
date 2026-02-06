@@ -35,8 +35,6 @@ typedef struct {
     int num_mm;
     int num_informed;
     int total_ticks;
-    int display_every;
-    int delay_ms;
     int visual_mode;
 } config_t;
 
@@ -62,16 +60,13 @@ static void print_usage(const char *program) {
     printf("  -m, --mm NUM          Number of market makers (default: 2)\n");
     printf("  -i, --informed NUM    Number of informed traders (default: 2)\n");
     printf("  -t, --ticks NUM       Total simulation ticks (default: 5000)\n");
-    printf("  -d, --display NUM     Display every N ticks (default: 50)\n");
-    printf("  -s, --speed NUM       Delay in ms between updates (default: 80)\n");
-    printf("  -q, --quiet           Quiet mode (no visual, just final stats)\n");
+    printf("  -q, --quiet           Quiet mode (no progress bar)\n");
     printf("  -h, --help            Show this help message\n");
     printf("\n");
     printf("Examples:\n");
     printf("  %s                    Run with defaults\n", program);
     printf("  %s -n 10 -m 3 -i 1    10 noise, 3 MM, 1 informed\n", program);
-    printf("  %s -t 10000 -s 20     Fast 10000 tick simulation\n", program);
-    printf("  %s -q                 Quiet mode, show only final stats\n", program);
+    printf("  %s -t 100000 -q       Fast benchmark (100k ticks)\n", program);
     printf("\n");
 }
 
@@ -203,8 +198,6 @@ int main(int argc, char *argv[]) {
         .num_mm = 2,
         .num_informed = 2,
         .total_ticks = 5000,
-        .display_every = 50,
-        .delay_ms = 80,
         .visual_mode = 1
     };
 
@@ -214,22 +207,18 @@ int main(int argc, char *argv[]) {
         {"mm",       required_argument, 0, 'm'},
         {"informed", required_argument, 0, 'i'},
         {"ticks",    required_argument, 0, 't'},
-        {"display",  required_argument, 0, 'd'},
-        {"speed",    required_argument, 0, 's'},
         {"quiet",    no_argument,       0, 'q'},
         {"help",     no_argument,       0, 'h'},
         {0, 0, 0, 0}
     };
 
     int opt;
-    while ((opt = getopt_long(argc, argv, "n:m:i:t:d:s:qh", long_options, NULL)) != -1) {
+    while ((opt = getopt_long(argc, argv, "n:m:i:t:qh", long_options, NULL)) != -1) {
         switch (opt) {
             case 'n': cfg.num_noise = atoi(optarg); break;
             case 'm': cfg.num_mm = atoi(optarg); break;
             case 'i': cfg.num_informed = atoi(optarg); break;
             case 't': cfg.total_ticks = atoi(optarg); break;
-            case 'd': cfg.display_every = atoi(optarg); break;
-            case 's': cfg.delay_ms = atoi(optarg); break;
             case 'q': cfg.visual_mode = 0; break;
             case 'h': print_usage(argv[0]); return 0;
             default:  print_usage(argv[0]); return 1;
@@ -281,13 +270,29 @@ int main(int argc, char *argv[]) {
     // Start timer
     clock_t start_time = clock();
 
-    // Run simulation
+    // Run simulation with progress bar
     if (cfg.visual_mode) {
-        for (int t = 0; t < cfg.total_ticks; t += cfg.display_every) {
-            simulator_run(t + cfg.display_every);
-            print_book(&book, &cfg, t + cfg.display_every);
-            usleep(cfg.delay_ms * 1000);
+        printf(COLOR_CYAN "\n  Running simulation...\n\n" COLOR_RESET);
+        int bar_width = 40;
+        int step = cfg.total_ticks / 100;  // Update progress every 1%
+        if (step < 1) step = 1;
+        
+        for (int t = 0; t < cfg.total_ticks; t += step) {
+            int end = t + step;
+            if (end > cfg.total_ticks) end = cfg.total_ticks;
+            simulator_run(end);
+            
+            // Progress bar
+            int progress = (int)((double)end / cfg.total_ticks * bar_width);
+            printf("\r  [");
+            for (int j = 0; j < bar_width; j++) {
+                if (j < progress) printf("█");
+                else printf("░");
+            }
+            printf("] %d%%", (int)((double)end / cfg.total_ticks * 100));
+            fflush(stdout);
         }
+        printf("\n");
     } else {
         // Quiet mode - just run
         printf("Running simulation...\n");
@@ -297,6 +302,9 @@ int main(int argc, char *argv[]) {
     // Stop timer
     clock_t end_time = clock();
     double elapsed_sec = (double)(end_time - start_time) / CLOCKS_PER_SEC;
+
+    // Print final book state
+    print_book(&book, &cfg, cfg.total_ticks);
 
     // Print final stats
     print_final_stats(&book, &cfg, elapsed_sec);

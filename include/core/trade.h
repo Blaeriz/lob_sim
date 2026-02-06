@@ -1,7 +1,7 @@
 #ifndef TRADE_H
 #define TRADE_H
 
-#include "../common/types.h"
+#include "common/types.h"
 
 typedef struct {
   trade_id_t id;
