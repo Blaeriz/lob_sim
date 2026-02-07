@@ -3,11 +3,20 @@
 
 #include "common/types.h"
 
-typedef enum { SIDE_BUY = 1, SIDE_SELL = -1 } side_t;
+typedef enum
+{
+  SIDE_BUY = 1,
+  SIDE_SELL = -1
+} side_t;
 
-typedef enum { ORDER_LIMIT, ORDER_MARKET } order_type_t;
+typedef enum
+{
+  ORDER_LIMIT,
+  ORDER_MARKET
+} order_type_t;
 
-typedef struct {
+typedef struct
+{
   order_id_t id;
   side_t side;
   order_type_t type;

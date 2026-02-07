@@ -5,12 +5,18 @@
 #include "core/order.h"
 #include "core/trade.h"
 
-typedef enum { EVENT_ORDER, EVENT_CANCEL, EVENT_TRADE } event_type_t;
+typedef enum
+{
+  EVENT_ORDER,
+  EVENT_CANCEL,
+  EVENT_TRADE
+} event_type_t;
 
-typedef struct {
+typedef struct
+{
   timestamp_t ts;
   event_type_t type;
-  void *payload;
+  void* payload;
 } event_t;
 
 #endif

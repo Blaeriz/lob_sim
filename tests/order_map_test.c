@@ -1,12 +1,13 @@
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <assert.h>
 
 #include "core/order_map.h"
 
 // Helper to create a dummy order
-static order_t *make_order(order_id_t id, side_t side, price_t price, qty_t qty) {
-  order_t *o = (order_t *)malloc(sizeof(order_t));
+static order_t* make_order(order_id_t id, side_t side, price_t price, qty_t qty)
+{
+  order_t* o = (order_t*)malloc(sizeof(order_t));
   o->id = id;
   o->side = side;
   o->type = ORDER_LIMIT;
@@ -17,7 +18,8 @@ static order_t *make_order(order_id_t id, side_t side, price_t price, qty_t qty)
 }
 
 // Test 1: Init and free empty map
-static void test_init_free(void) {
+static void test_init_free(void)
+{
   printf("test_init_free... ");
 
   order_map_t map;
@@ -37,19 +39,20 @@ static void test_init_free(void) {
 }
 
 // Test 2: Insert and find single entry
-static void test_insert_find_single(void) {
+static void test_insert_find_single(void)
+{
   printf("test_insert_find_single... ");
 
   order_map_t map;
   om_init(&map, 16);
 
-  order_t *order = make_order(42, SIDE_BUY, 100, 10);
+  order_t* order = make_order(42, SIDE_BUY, 100, 10);
   int rc = om_insert(&map, 42, order, SIDE_BUY, 100);
 
   assert(rc == 0);
   assert(map.count == 1);
 
-  om_entry_t *entry = om_find(&map, 42);
+  om_entry_t* entry = om_find(&map, 42);
   assert(entry != NULL);
   assert(entry->key == 42);
   assert(entry->order == order);
@@ -62,16 +65,17 @@ static void test_insert_find_single(void) {
 }
 
 // Test 3: Find non-existent entry
-static void test_find_not_found(void) {
+static void test_find_not_found(void)
+{
   printf("test_find_not_found... ");
 
   order_map_t map;
   om_init(&map, 16);
 
-  order_t *order = make_order(1, SIDE_BUY, 100, 10);
+  order_t* order = make_order(1, SIDE_BUY, 100, 10);
   om_insert(&map, 1, order, SIDE_BUY, 100);
 
-  om_entry_t *entry = om_find(&map, 999);
+  om_entry_t* entry = om_find(&map, 999);
   assert(entry == NULL);
 
   free(order);
@@ -80,14 +84,16 @@ static void test_find_not_found(void) {
 }
 
 // Test 4: Insert multiple entries
-static void test_insert_multiple(void) {
+static void test_insert_multiple(void)
+{
   printf("test_insert_multiple... ");
 
   order_map_t map;
   om_init(&map, 16);
 
-  order_t *orders[5];
-  for (int i = 0; i < 5; i++) {
+  order_t* orders[5];
+  for (int i = 0; i < 5; i++)
+  {
     orders[i] = make_order(i + 1, SIDE_BUY, 100 + i, 10);
     om_insert(&map, i + 1, orders[i], SIDE_BUY, 100 + i);
   }
@@ -95,14 +101,16 @@ static void test_insert_multiple(void) {
   assert(map.count == 5);
 
   // Verify all can be found
-  for (int i = 0; i < 5; i++) {
-    om_entry_t *entry = om_find(&map, i + 1);
+  for (int i = 0; i < 5; i++)
+  {
+    om_entry_t* entry = om_find(&map, i + 1);
     assert(entry != NULL);
     assert(entry->order == orders[i]);
     assert(entry->price == 100 + i);
   }
 
-  for (int i = 0; i < 5; i++) {
+  for (int i = 0; i < 5; i++)
+  {
     free(orders[i]);
   }
   om_free(&map);
@@ -110,16 +118,17 @@ static void test_insert_multiple(void) {
 }
 
 // Test 5: Collision handling (same bucket)
-static void test_collision(void) {
+static void test_collision(void)
+{
   printf("test_collision... ");
 
   order_map_t map;
-  om_init(&map, 8);  // small bucket count to force collisions
+  om_init(&map, 8); // small bucket count to force collisions
 
   // IDs 1, 9, 17 all hash to bucket 1 (mod 8)
-  order_t *o1 = make_order(1, SIDE_BUY, 100, 10);
-  order_t *o9 = make_order(9, SIDE_SELL, 200, 20);
-  order_t *o17 = make_order(17, SIDE_BUY, 300, 30);
+  order_t* o1 = make_order(1, SIDE_BUY, 100, 10);
+  order_t* o9 = make_order(9, SIDE_SELL, 200, 20);
+  order_t* o17 = make_order(17, SIDE_BUY, 300, 30);
 
   om_insert(&map, 1, o1, SIDE_BUY, 100);
   om_insert(&map, 9, o9, SIDE_SELL, 200);
@@ -128,9 +137,9 @@ static void test_collision(void) {
   assert(map.count == 3);
 
   // All three should be findable
-  om_entry_t *e1 = om_find(&map, 1);
-  om_entry_t *e9 = om_find(&map, 9);
-  om_entry_t *e17 = om_find(&map, 17);
+  om_entry_t* e1 = om_find(&map, 1);
+  om_entry_t* e9 = om_find(&map, 9);
+  om_entry_t* e17 = om_find(&map, 17);
 
   assert(e1 != NULL && e1->order == o1);
   assert(e9 != NULL && e9->order == o9);
@@ -144,13 +153,14 @@ static void test_collision(void) {
 }
 
 // Test 6: Remove single entry
-static void test_remove_single(void) {
+static void test_remove_single(void)
+{
   printf("test_remove_single... ");
 
   order_map_t map;
   om_init(&map, 16);
 
-  order_t *order = make_order(42, SIDE_BUY, 100, 10);
+  order_t* order = make_order(42, SIDE_BUY, 100, 10);
   om_insert(&map, 42, order, SIDE_BUY, 100);
 
   assert(map.count == 1);
@@ -159,7 +169,7 @@ static void test_remove_single(void) {
   assert(rc == 0);
   assert(map.count == 0);
 
-  om_entry_t *entry = om_find(&map, 42);
+  om_entry_t* entry = om_find(&map, 42);
   assert(entry == NULL);
 
   free(order);
@@ -168,13 +178,14 @@ static void test_remove_single(void) {
 }
 
 // Test 7: Remove non-existent entry
-static void test_remove_not_found(void) {
+static void test_remove_not_found(void)
+{
   printf("test_remove_not_found... ");
 
   order_map_t map;
   om_init(&map, 16);
 
-  order_t *order = make_order(1, SIDE_BUY, 100, 10);
+  order_t* order = make_order(1, SIDE_BUY, 100, 10);
   om_insert(&map, 1, order, SIDE_BUY, 100);
 
   int rc = om_remove(&map, 999);
@@ -187,7 +198,8 @@ static void test_remove_not_found(void) {
 }
 
 // Test 8: Remove from empty bucket
-static void test_remove_empty_bucket(void) {
+static void test_remove_empty_bucket(void)
+{
   printf("test_remove_empty_bucket... ");
 
   order_map_t map;
@@ -201,20 +213,21 @@ static void test_remove_empty_bucket(void) {
 }
 
 // Test 9: Remove head of chain
-static void test_remove_chain_head(void) {
+static void test_remove_chain_head(void)
+{
   printf("test_remove_chain_head... ");
 
   order_map_t map;
   om_init(&map, 8);
 
   // IDs 1, 9, 17 all hash to bucket 1
-  order_t *o1 = make_order(1, SIDE_BUY, 100, 10);
-  order_t *o9 = make_order(9, SIDE_SELL, 200, 20);
-  order_t *o17 = make_order(17, SIDE_BUY, 300, 30);
+  order_t* o1 = make_order(1, SIDE_BUY, 100, 10);
+  order_t* o9 = make_order(9, SIDE_SELL, 200, 20);
+  order_t* o17 = make_order(17, SIDE_BUY, 300, 30);
 
   om_insert(&map, 1, o1, SIDE_BUY, 100);
   om_insert(&map, 9, o9, SIDE_SELL, 200);
-  om_insert(&map, 17, o17, SIDE_BUY, 300);  // head of chain
+  om_insert(&map, 17, o17, SIDE_BUY, 300); // head of chain
 
   // Remove head (17 was inserted last, so it's the head)
   int rc = om_remove(&map, 17);
@@ -234,7 +247,8 @@ static void test_remove_chain_head(void) {
 }
 
 // Test 10: Remove middle of chain
-static void test_remove_chain_middle(void) {
+static void test_remove_chain_middle(void)
+{
   printf("test_remove_chain_middle... ");
 
   order_map_t map;
@@ -242,9 +256,9 @@ static void test_remove_chain_middle(void) {
 
   // IDs 1, 9, 17 all hash to bucket 1
   // Insert order: 1, 9, 17 → chain is: 17 -> 9 -> 1 -> NULL
-  order_t *o1 = make_order(1, SIDE_BUY, 100, 10);
-  order_t *o9 = make_order(9, SIDE_SELL, 200, 20);
-  order_t *o17 = make_order(17, SIDE_BUY, 300, 30);
+  order_t* o1 = make_order(1, SIDE_BUY, 100, 10);
+  order_t* o9 = make_order(9, SIDE_SELL, 200, 20);
+  order_t* o17 = make_order(17, SIDE_BUY, 300, 30);
 
   om_insert(&map, 1, o1, SIDE_BUY, 100);
   om_insert(&map, 9, o9, SIDE_SELL, 200);
@@ -268,7 +282,8 @@ static void test_remove_chain_middle(void) {
 }
 
 // Test 11: Remove tail of chain
-static void test_remove_chain_tail(void) {
+static void test_remove_chain_tail(void)
+{
   printf("test_remove_chain_tail... ");
 
   order_map_t map;
@@ -276,9 +291,9 @@ static void test_remove_chain_tail(void) {
 
   // IDs 1, 9, 17 all hash to bucket 1
   // Chain: 17 -> 9 -> 1 -> NULL (1 is tail)
-  order_t *o1 = make_order(1, SIDE_BUY, 100, 10);
-  order_t *o9 = make_order(9, SIDE_SELL, 200, 20);
-  order_t *o17 = make_order(17, SIDE_BUY, 300, 30);
+  order_t* o1 = make_order(1, SIDE_BUY, 100, 10);
+  order_t* o9 = make_order(9, SIDE_SELL, 200, 20);
+  order_t* o17 = make_order(17, SIDE_BUY, 300, 30);
 
   om_insert(&map, 1, o1, SIDE_BUY, 100);
   om_insert(&map, 9, o9, SIDE_SELL, 200);
@@ -302,17 +317,19 @@ static void test_remove_chain_tail(void) {
 }
 
 // Test 12: Large number of entries
-static void test_many_entries(void) {
+static void test_many_entries(void)
+{
   printf("test_many_entries... ");
 
   order_map_t map;
   om_init(&map, 64);
 
   const int N = 1000;
-  order_t **orders = malloc(N * sizeof(order_t *));
+  order_t** orders = malloc(N * sizeof(order_t*));
 
   // Insert N orders
-  for (int i = 0; i < N; i++) {
+  for (int i = 0; i < N; i++)
+  {
     orders[i] = make_order(i + 1, (i % 2) ? SIDE_BUY : SIDE_SELL, 100 + i, 10);
     om_insert(&map, i + 1, orders[i], orders[i]->side, orders[i]->price);
   }
@@ -320,14 +337,16 @@ static void test_many_entries(void) {
   assert(map.count == (size_t)N);
 
   // Verify all findable
-  for (int i = 0; i < N; i++) {
-    om_entry_t *entry = om_find(&map, i + 1);
+  for (int i = 0; i < N; i++)
+  {
+    om_entry_t* entry = om_find(&map, i + 1);
     assert(entry != NULL);
     assert(entry->order == orders[i]);
   }
 
   // Remove every other one
-  for (int i = 0; i < N; i += 2) {
+  for (int i = 0; i < N; i += 2)
+  {
     int rc = om_remove(&map, i + 1);
     assert(rc == 0);
   }
@@ -335,16 +354,21 @@ static void test_many_entries(void) {
   assert(map.count == (size_t)(N / 2));
 
   // Verify removals
-  for (int i = 0; i < N; i++) {
-    om_entry_t *entry = om_find(&map, i + 1);
-    if (i % 2 == 0) {
-      assert(entry == NULL);  // removed
-    } else {
-      assert(entry != NULL);  // still there
+  for (int i = 0; i < N; i++)
+  {
+    om_entry_t* entry = om_find(&map, i + 1);
+    if (i % 2 == 0)
+    {
+      assert(entry == NULL); // removed
+    }
+    else
+    {
+      assert(entry != NULL); // still there
     }
   }
 
-  for (int i = 0; i < N; i++) {
+  for (int i = 0; i < N; i++)
+  {
     free(orders[i]);
   }
   free(orders);
@@ -353,7 +377,8 @@ static void test_many_entries(void) {
 }
 
 // Test 13: NULL inputs
-static void test_null_inputs(void) {
+static void test_null_inputs(void)
+{
   printf("test_null_inputs... ");
 
   order_map_t map;
@@ -378,7 +403,8 @@ static void test_null_inputs(void) {
   printf("PASSED\n");
 }
 
-int main(void) {
+int main(void)
+{
   printf("\n=== Running order_map tests ===\n\n");
 
   test_init_free();

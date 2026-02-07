@@ -15,6 +15,4 @@ typedef uint64_t order_id_t;
 typedef uint64_t trade_id_t;
 typedef uint64_t agent_id_t;
 
-
-
 #endif

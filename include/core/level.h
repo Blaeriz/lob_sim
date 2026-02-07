@@ -4,17 +4,19 @@
 #include "common/types.h"
 #include "order.h"
 
-typedef struct order_node {
-  order_t *order;
-  struct order_node *next;
-  struct order_node *prev;
+typedef struct order_node
+{
+  order_t* order;
+  struct order_node* next;
+  struct order_node* prev;
 } order_node_t;
 
-typedef struct {
+typedef struct
+{
   price_t price;
   qty_t total_qty;
-  order_node_t *head;
-  order_node_t *tail;
+  order_node_t* head;
+  order_node_t* tail;
 } price_level_t;
 
 #endif

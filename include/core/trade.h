@@ -3,7 +3,8 @@
 
 #include "common/types.h"
 
-typedef struct {
+typedef struct
+{
   trade_id_t id;
   order_id_t buy_id;
   order_id_t sell_id;

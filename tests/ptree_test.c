@@ -1,10 +1,11 @@
 #include <assert.h>
 #include <stdio.h>
 
-#include "core/price_tree.h"
 #include "core/level_ops.h"
+#include "core/price_tree.h"
 
-int main(void) {
+int main(void)
+{
   price_tree_t t;
   pt_init(&t);
 

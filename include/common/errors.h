@@ -1,7 +1,8 @@
 #ifndef ERRORS_H
 #define ERRORS_H
 
-typedef enum {
+typedef enum
+{
   ERR_OK = 0,
   ERR_OUT_OF_MEMORY,
   ERR_INVALID_ORDER,

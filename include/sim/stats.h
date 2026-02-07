@@ -4,7 +4,8 @@
 #include "common/types.h"
 #include <stddef.h>
 
-typedef struct {
+typedef struct
+{
   double mid_price;
   double spread;
   double volatility;
