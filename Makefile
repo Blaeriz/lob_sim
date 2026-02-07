@@ -38,12 +38,22 @@ bench-run: $(BENCH_TARGET)
 format:
 	clang-format -i src/**/*.c include/**/*.h
 
+
+# Separate build dir for bench objects
+BENCH_BUILD_DIR = build_bench
 BENCH_TARGET = $(BIN_DIR)/lob_sim_bench
 BENCH_SRCS = $(SRCS) src/bench/latency.c
-BENCH_OBJS = $(patsubst src/%.c,$(BUILD_DIR)/%.o,$(BENCH_SRCS))
+BENCH_OBJS = $(patsubst src/%.c,$(BENCH_BUILD_DIR)/%.o,$(BENCH_SRCS))
 
 bench: $(BENCH_TARGET)
 
 $(BENCH_TARGET): $(BENCH_OBJS)
 	@mkdir -p $(BIN_DIR)
-	$(CC) $(CFLAGS) -O3 -DBENCHMARK -o $@ $^
+	$(CC) $(CFLAGS) -DBENCHMARK -o $@ $^
+
+$(BENCH_BUILD_DIR)/%.o: src/%.c
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) -DBENCHMARK -c -o $@ $<
+
+bench-clean:
+	@rm -rf $(BENCH_BUILD_DIR) $(BENCH_TARGET)
