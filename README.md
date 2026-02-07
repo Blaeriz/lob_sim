@@ -141,17 +141,30 @@ gcc -std=c11 -O3 -Wall -Wextra -DBENCHMARK -Iinclude -o bin/lob_sim_bench \
 
 ## Performance
 
+
 Measured on an **Intel i7-13620H** (13th Gen, 4.90 GHz) with `-O3` optimization.
 
-### Latency (100 agents, 50K ticks)
+### Deep Book Stress Test (1M ticks, 100 agents)
+
+| Operation         | p50   | p99   | Mean   | Max      |
+|-------------------|-------|-------|--------|----------|
+| `book_add_order`  | 49ns  | 93ns  | 61ns   | 307,190ns |
+| `book_remove_order` | 24ns | 40ns  | 25ns   | 28,735ns |
+| `match_order`     | 16ns  | 131ns | 19ns   | 24,187ns |
+
+| Configuration | Ticks/Second | Orders/Level | Trades | Volume |
+|---------------|--------------|--------------|--------|--------|
+| 100 agents    | 255,687      | 319,000+     | 1,094,619 | 3,707,152 |
+
+**Scales to 25M+ order ops, 1M ticks, 1M+ trades, and 300k+ orders per price level.**
+
+### Previous Benchmarks
 
 | Operation | p50 | p99 | Mean |
 |-----------|-----|-----|------|
 | `match_order` | 15 ns | 127 ns | 18 ns |
 | `book_add_order` | 48 ns | 95 ns | 61 ns |
 | `book_remove_order` | 25 ns | 41 ns | 25 ns |
-
-### Throughput
 
 | Configuration | Ticks/Second |
 |---------------|--------------|

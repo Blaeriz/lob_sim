@@ -36,6 +36,20 @@ Throughput: 258k+ ticks/sec
 **Key achievement**: Optimized `book_remove_order` from O(n) → O(1) using
 doubly-linked lists and direct node indexing. p50 dropped from 235μs → 25ns.
 
+Results (100 agents, 1M ticks, deep book stress test):
+```
+book_add_order:    p50: 49 ns,   p99: 93 ns
+book_remove_order: p50: 24 ns,   p99: 40 ns
+match_order:       p50: 16 ns,   p99: 131 ns
+Throughput: 255k+ ticks/sec
+Orders/Level: 319,000+
+Trades: 1,094,619
+Volume: 3,707,152
+Total order ops: 25M+
+```
+
+**Scales to 1M ticks, 100 agents, 25M+ order ops, 1M+ trades, and 300k+ orders per price level.**
+
 ---
 
 ### 2. Add Deterministic Seed (`--seed`)
