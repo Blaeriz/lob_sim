@@ -35,7 +35,7 @@ This project implements a complete limit order book matching engine with agent-b
 - **Price-Time Priority Matching**: FIFO execution at each price level
 - **Red-Black Tree Price Levels**: O(log n) best bid/ask lookup
 - **Hash Map Order Index**: O(1) order lookup by ID for fast cancellations
-- **Efficient Level Management**: Linked-list queues at each price level
+- **O(1) Order Removal**: Doubly-linked level queues with direct node indexing
 
 ### Trading Agents
 - **Noise Traders**: Random order flow with configurable parameters
@@ -141,13 +141,33 @@ gcc -std=c11 -O3 -Wall -Wextra -DBENCHMARK -Iinclude -o bin/lob_sim_bench \
 
 ## Performance
 
-Measured on stock hardware with `-O3` optimization:
+Measured on an **Intel i7-13620H** (13th Gen, 4.90 GHz) with `-O3` optimization.
 
-| Metric | Value |
-|--------|-------|
-| **match_order** | p50=15ns, p99=38ns |
-| **book_add_order** | p50=52ns, p99=104ns |
-| **Throughput** | ~72,000+ ticks/sec |
+### Latency (100 agents, 50K ticks)
+
+| Operation | p50 | p99 | Mean |
+|-----------|-----|-----|------|
+| `match_order` | 15 ns | 127 ns | 18 ns |
+| `book_add_order` | 48 ns | 95 ns | 61 ns |
+| `book_remove_order` | 25 ns | 41 ns | 25 ns |
+
+### Throughput
+
+| Configuration | Ticks/Second |
+|---------------|--------------|
+| 100 agents (70N + 10MM + 20I) | **258,347** |
+| 9 agents (5N + 2MM + 2I) | **72,781** |
+
+### Optimization Highlight
+
+Order removal was optimized from **O(n) → O(1)** using doubly-linked lists
+and direct node indexing in the hash map:
+
+| Metric | Before | After | Improvement |
+|--------|--------|-------|-------------|
+| `remove` p50 | 235,089 ns | 25 ns | **9,400x** |
+| `remove` p99 | 411,925 ns | 41 ns | **10,000x** |
+| Throughput | 471 ticks/s | 258,347 ticks/s | **548x** |
 
 Build with `-DBENCHMARK` flag to enable latency tracking.
 
@@ -165,10 +185,10 @@ Build with `-DBENCHMARK` flag to enable latency tracking.
 - **Implementation**: Open addressing with linear probing
 - **Load factor**: Resizes at 75% capacity
 
-### Price Level (Linked List)
+### Price Level (Doubly-Linked List)
 - **Purpose**: FIFO queue of orders at each price
-- **Operations**: Push (back), pop (front), remove by ID
-- **Complexity**: O(1) push/pop, O(n) remove
+- **Operations**: Push (back), pop (front), remove by node pointer
+- **Complexity**: O(1) push/pop/remove
 
 ---
 

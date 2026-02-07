@@ -9,13 +9,32 @@ Prioritized improvements to make this project "quant dev interview ready" for Op
 ### 1. ~~Add Latency Benchmarking~~ ✅ DONE
 **Completed!**
 
-Results achieved:
+Results (9 agents, 50k ticks):
 ```
-match_order:      p50: 15 ns,   p99: 38 ns
-book_add_order:   p50: 52 ns,   p99: 104 ns
+match_order:       p50: 15 ns,   p99: 38 ns
+book_add_order:    p50: 52 ns,   p99: 104 ns
 book_remove_order: p50: 5175 ns, p99: 7496 ns
-Throughput: 72k+ ticks/sec with 9 agents
+Throughput: 72k+ ticks/sec
 ```
+
+Results (100 agents, 50k ticks, pre-optimization):
+```
+match_order:       p50: 15 ns,    p99: 282 ns
+book_add_order:    p50: 77 ns,    p99: 511 ns
+book_remove_order: p50: 235089 ns, p99: 411925 ns  ⚠️ BOTTLENECK
+Throughput: 471 ticks/sec
+```
+
+Results (100 agents, 50k ticks, post-optimization):
+```
+match_order:       p50: 15 ns,   p99: 127 ns
+book_add_order:    p50: 48 ns,   p99: 95 ns
+book_remove_order: p50: 25 ns,   p99: 41 ns   ✅ FIXED (9,400x faster)
+Throughput: 258k+ ticks/sec
+```
+
+**Key achievement**: Optimized `book_remove_order` from O(n) → O(1) using
+doubly-linked lists and direct node indexing. p50 dropped from 235μs → 25ns.
 
 ---
 
@@ -45,14 +64,16 @@ Throughput: 72k+ ticks/sec with 9 agents
 
 ---
 
-### 4. Optimize `book_remove_order()` Performance
-**Time: 1-2 hours | Impact: High**
+### 4. ~~Optimize `book_remove_order()` Performance~~ ✅ DONE
+**Completed!**
 
-Current bottleneck: p50 = 5175 ns (vs 52 ns for add)
+Fixed O(n) → O(1) removal:
+- [x] Added `prev` pointer for doubly-linked list removal
+- [x] Stored `order_node_t*` in order map for direct node access
+- [x] Changed `level_remove()` to accept node pointer directly
 
-- [ ] Profile to find slowest part (tree lookup vs list traversal)
-- [ ] Consider order pool instead of malloc/free
-- [ ] Consider storing level pointer in order for O(1) level access
+Results: p50 dropped from 235,089 ns → 25 ns (**9,400x improvement**)
+Throughput: 471 → 258,347 ticks/sec (**548x improvement**)
 
 ---
 
@@ -145,23 +166,24 @@ Current bottleneck: p50 = 5175 ns (vs 52 ns for add)
 - [x] `stats.c`, `clock.c`, `event.c` (stub)
 - [x] **Latency benchmarking** (p50/p99/mean for match, add, remove)
 - [x] **Benchmark harness** (`include/bench/latency.h`, `src/bench/latency.c`)
+- [x] **O(1) order removal** (doubly-linked list + direct node indexing, 9,400x speedup)
 
 ---
 
 ## 🎯 Resume Goal
 
-With latency benchmarking complete, you can now claim:
+With latency benchmarking and O(1) removal optimization complete, you can now claim:
 
-> Implemented a high-performance limit order book matching engine in C using red-black trees and O(1) order indexing. **Median match latency: 15 ns, p99: 38 ns. Order insertion: p50 52 ns, p99 104 ns.** Simulated heterogeneous trading agents including noise traders, market makers, and informed traders.
+> Implemented a high-performance limit order book matching engine in C using red-black trees and O(1) order indexing. **Median match latency: 15 ns, p99: 127 ns.** Optimized order removal from O(n) → O(1) using doubly-linked lists, achieving **9,400x speedup** (235μs → 25ns). **258K+ ticks/sec** with 100 concurrent agents.
 
 ---
 
 ## Order of Attack
 
 1. ~~Latency benchmarking~~ ✅ DONE
-2. `--seed` (30 min) — quick win
-3. Microstructure stats (1-2 hours) — very quant-relevant
-4. Optimize `book_remove_order` (1-2 hours) — performance win
+2. ~~Optimize `book_remove_order`~~ ✅ DONE (9,400x speedup)
+3. `--seed` (30 min) — quick win
+4. Microstructure stats (1-2 hours) — very quant-relevant
 5. Memory notes in README (30 min) — free signal
 
-**Remaining: ~4-5 hours for HIGH + MED priority items**
+**Remaining: ~3-4 hours for HIGH + MED priority items**

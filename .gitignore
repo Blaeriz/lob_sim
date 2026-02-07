@@ -10,4 +10,4 @@ docs/
 perf.data
 perf.data.old
 RESUME_BULLETS.md
-
+.clang-format
