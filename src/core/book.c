@@ -6,6 +6,12 @@
 #include "core/trade.h"
 #include "core/matching.h"
 
+#ifdef BENCHMARK
+#include "bench/latency.h"
+extern latency_tracker_t add_order_tracker;
+extern latency_tracker_t remove_order_tracker;
+#endif
+
 void book_init(order_book_t *book) {
   pt_init(&book->bids);
   pt_init(&book->asks);
@@ -30,6 +36,9 @@ void book_free(order_book_t *book) {
 }
 
 void book_add_order(order_book_t *book, order_t *order) {
+#ifdef BENCHMARK
+  uint64_t start = time_now_ns();
+#endif
   if (!book || !order) return;
 
   // MATCH FIRST
@@ -62,9 +71,15 @@ void book_add_order(order_book_t *book, order_t *order) {
 
   level_push(lvl, order);
   om_insert(&book->orders, order->id, order, order->side, order->price);
+#ifdef BENCHMARK
+  latency_record(&add_order_tracker, time_now_ns() - start);
+#endif
 }
 
 void book_remove_order(order_book_t *book, order_id_t id) {
+#ifdef BENCHMARK
+  uint64_t start = time_now_ns();
+#endif
   if (!book) {
     return;
   }
@@ -92,5 +107,8 @@ void book_remove_order(order_book_t *book, order_id_t id) {
 
   // 6. Remove from order map
   om_remove(&book->orders, id);
+#ifdef BENCHMARK
+  latency_record(&remove_order_tracker, time_now_ns() - start);
+#endif
 }
 

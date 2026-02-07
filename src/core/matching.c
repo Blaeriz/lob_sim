@@ -3,8 +3,15 @@
 #include "sim/stats.h"
 #include <stdlib.h>
 
+#ifdef BENCHMARK
+#include "bench/latency.h"
+extern latency_tracker_t match_order_tracker;
+#endif
 
 qty_t match_order(order_book_t *book, order_t *incoming, trade_t *trades, size_t max_trades) {
+#ifdef BENCHMARK
+  uint64_t start = time_now_ns();
+#endif
   size_t trade_count = 0;
   price_tree_t *tree;
   side_t side;
@@ -94,6 +101,10 @@ qty_t match_order(order_book_t *book, order_t *incoming, trade_t *trades, size_t
       free(best);
     }
   }
+
+#ifdef BENCHMARK
+  latency_record(&match_order_tracker, time_now_ns() - start);
+#endif
   
   // 4. Return trade_count
   return trade_count;

@@ -15,6 +15,13 @@
 #include "agents/informed_trader.h"
 #include "sim/stats.h"
 
+#ifdef BENCHMARK
+#include "bench/latency.h"
+latency_tracker_t add_order_tracker;
+latency_tracker_t remove_order_tracker;
+latency_tracker_t match_order_tracker;
+#endif
+
 // Colors
 #define COLOR_RESET   "\033[0m"
 #define COLOR_GREEN   "\033[32m"
@@ -192,6 +199,11 @@ static void print_final_stats(order_book_t *book, config_t *cfg, double elapsed_
 }
 
 int main(int argc, char *argv[]) {
+#ifdef BENCHMARK
+    latency_init(&add_order_tracker);
+    latency_init(&remove_order_tracker);
+    latency_init(&match_order_tracker);
+#endif
     // Default configuration
     config_t cfg = {
         .num_noise = 5,
@@ -308,6 +320,17 @@ int main(int argc, char *argv[]) {
 
     // Print final stats
     print_final_stats(&book, &cfg, elapsed_sec);
+    
+#ifdef BENCHMARK
+    printf("\n");
+    latency_print(&add_order_tracker, "book_add_order");
+    latency_print(&remove_order_tracker, "book_remove_order");
+    latency_print(&match_order_tracker, "match_order");
+    
+    latency_free(&add_order_tracker);
+    latency_free(&remove_order_tracker);
+    latency_free(&match_order_tracker);
+#endif
 
     // Cleanup
     for (int i = 0; i < cfg.num_noise; i++) {
