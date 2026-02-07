@@ -6,27 +6,15 @@ Prioritized improvements to make this project "quant dev interview ready" for Op
 
 ## 🔥 High Priority (Do First)
 
-### 1. Add Latency Benchmarking
-**Time: 1-2 hours | Impact: Huge**
+### 1. ~~Add Latency Benchmarking~~ ✅ DONE
+**Completed!**
 
-- [ ] Add `clock_gettime(CLOCK_MONOTONIC)` to measure nanoseconds per match
-- [ ] Track min/median/p99/max latency
-- [ ] Add latency histogram (buckets: <100ns, <500ns, <1µs, <10µs, >10µs)
-- [ ] Output stats at end of simulation
-
-```c
-struct timespec start, end;
-clock_gettime(CLOCK_MONOTONIC, &start);
-match_order(...);
-clock_gettime(CLOCK_MONOTONIC, &end);
-uint64_t latency_ns = (end.tv_sec - start.tv_sec) * 1e9 + (end.tv_nsec - start.tv_nsec);
+Results achieved:
 ```
-
-**Target metrics:**
-```
-Median match latency: ~200 ns
-p99 latency: ~800 ns
-Throughput: 2M+ order events/sec (-O3)
+match_order:      p50: 15 ns,   p99: 38 ns
+book_add_order:   p50: 52 ns,   p99: 104 ns
+book_remove_order: p50: 5175 ns, p99: 7496 ns
+Throughput: 72k+ ticks/sec with 9 agents
 ```
 
 ---
@@ -54,6 +42,17 @@ Throughput: 2M+ order events/sec (-O3)
 - [ ] **Depth tracking**: total qty at top N levels
 - [ ] **Fill ratio by agent type**: % of orders that got filled
 - [ ] **Trade sign autocorrelation** (advanced)
+
+---
+
+### 4. Optimize `book_remove_order()` Performance
+**Time: 1-2 hours | Impact: High**
+
+Current bottleneck: p50 = 5175 ns (vs 52 ns for add)
+
+- [ ] Profile to find slowest part (tree lookup vs list traversal)
+- [ ] Consider order pool instead of malloc/free
+- [ ] Consider storing level pointer in order for O(1) level access
 
 ---
 
@@ -107,13 +106,13 @@ Throughput: 2M+ order events/sec (-O3)
 
 ---
 
-### 9. Benchmark Harness
-**Time: 1 hour**
+### 9. ~~Benchmark Harness~~ ✅ DONE
+**Completed!**
 
-- [ ] Create `bench/` directory
-- [ ] `bench/synthetic_flow.c` — random order stream
-- [ ] `bench/latency_test.c` — measure match latency
-- [ ] Makefile target: `make bench`
+- [x] Created `include/bench/latency.h`
+- [x] Created `src/bench/latency.c`
+- [x] Compile with `-DBENCHMARK` flag for latency tracking
+- [x] Integrated into `book.c` and `matching.c`
 
 ---
 
@@ -144,23 +143,25 @@ Throughput: 2M+ order events/sec (-O3)
 - [x] Simulator state management
 - [x] `simulator_init()`, `simulator_add_agent()`, `simulator_run()`, `simulator_free()`
 - [x] `stats.c`, `clock.c`, `event.c` (stub)
+- [x] **Latency benchmarking** (p50/p99/mean for match, add, remove)
+- [x] **Benchmark harness** (`include/bench/latency.h`, `src/bench/latency.c`)
 
 ---
 
 ## 🎯 Resume Goal
 
-After completing HIGH priority items:
+With latency benchmarking complete, you can now claim:
 
-> Implemented a high-performance limit order book matching engine in C using red-black trees and O(1) order indexing, achieving **~2M events/sec** with **median match latency of ~200ns**. Simulated heterogeneous trading agents with microstructure metrics including spread, imbalance, and fill ratios.
+> Implemented a high-performance limit order book matching engine in C using red-black trees and O(1) order indexing. **Median match latency: 15 ns, p99: 38 ns. Order insertion: p50 52 ns, p99 104 ns.** Simulated heterogeneous trading agents including noise traders, market makers, and informed traders.
 
 ---
 
 ## Order of Attack
 
-1. `--seed` (30 min) — quick win
-2. Latency benchmarking (1-2 hours) — biggest impact
+1. ~~Latency benchmarking~~ ✅ DONE
+2. `--seed` (30 min) — quick win
 3. Microstructure stats (1-2 hours) — very quant-relevant
-4. Memory notes in README (30 min) — free signal
-5. IOC/FOK orders (1 hour) — shows completeness
+4. Optimize `book_remove_order` (1-2 hours) — performance win
+5. Memory notes in README (30 min) — free signal
 
-**Total: ~5-6 hours for HIGH + MED priority items**
+**Remaining: ~4-5 hours for HIGH + MED priority items**

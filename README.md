@@ -18,7 +18,7 @@ This project implements a complete limit order book matching engine with agent-b
 │   8768 @ 1000 [1607]       │   🎲 Noise Traders             │
 │   8980 @ 999  [1620]       │   🏦 Market Makers             │
 │   8802 @ 998  [1608]       │   🧠 Informed Traders          │
-│        ⬆ SPREAD ⬇          │                                │
+│      ⬆ SPREAD X ⬇         │                                │
 │   8376 @ 991  [1536]       │   Statistics                   │
 │   8787 @ 990  [1614]       │   ──────────────────           │
 │   8423 @ 989  [1557]       │   📊 Trades: 4,872             │
@@ -48,6 +48,12 @@ This project implements a complete limit order book matching engine with agent-b
 - **Statistics tracking**: trades, volume, prices
 - **CLI interface** with command-line options
 
+### Benchmarking
+- **Compile-time benchmarking** with `-DBENCHMARK` flag
+- **Nanosecond-precision latency tracking** using `clock_gettime(CLOCK_MONOTONIC)`
+- **Percentile stats**: p50, p99, min, max, mean
+- **Zero overhead** in production builds
+
 ---
 
 ## Architecture
@@ -74,6 +80,9 @@ src/
 │   ├── stats.c             # Statistics collection
 │   └── event.c             # Event queue (extensible)
 │
+├── bench/                  # Benchmarking
+│   └── latency.c           # Nanosecond latency tracking
+│
 └── main.c                  # CLI entry point
 ```
 
@@ -92,6 +101,13 @@ Or with optimizations:
 ```bash
 gcc -std=c11 -O3 -Wall -Wextra -Iinclude -o bin/lob_sim \
     src/main.c src/agents/*.c src/core/*.c src/sim/*.c
+```
+
+With benchmarking enabled:
+
+```bash
+gcc -std=c11 -O3 -Wall -Wextra -DBENCHMARK -Iinclude -o bin/lob_sim_bench \
+    src/main.c src/agents/*.c src/core/*.c src/sim/*.c src/bench/*.c
 ```
 
 ### Run
@@ -118,8 +134,6 @@ gcc -std=c11 -O3 -Wall -Wextra -Iinclude -o bin/lob_sim \
 | `-m, --mm` | Number of market makers | 2 |
 | `-i, --informed` | Number of informed traders | 2 |
 | `-t, --ticks` | Total simulation ticks | 5000 |
-| `-d, --display` | Display update frequency | 50 |
-| `-s, --speed` | Delay between updates (ms) | 80 |
 | `-q, --quiet` | Quiet mode (benchmark) | false |
 | `-h, --help` | Show help | - |
 
@@ -127,11 +141,15 @@ gcc -std=c11 -O3 -Wall -Wextra -Iinclude -o bin/lob_sim \
 
 ## Performance
 
-| Configuration | Ticks/Second |
-|---------------|--------------|
-| 10 agents | ~240,000 |
-| 100 agents | ~10,000 |
-| 100 agents (-O3) | ~25,000+ |
+Measured on stock hardware with `-O3` optimization:
+
+| Metric | Value |
+|--------|-------|
+| **match_order** | p50=15ns, p99=38ns |
+| **book_add_order** | p50=52ns, p99=104ns |
+| **Throughput** | ~72,000+ ticks/sec |
+
+Build with `-DBENCHMARK` flag to enable latency tracking.
 
 ---
 
