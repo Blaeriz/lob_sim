@@ -15,7 +15,7 @@ void om_init(order_map_t *map, size_t num_buckets) {
   map->num_buckets = num_buckets;
 }
 
-int om_insert(order_map_t *map, order_id_t id, order_t *order, side_t side, price_t price) {
+int om_insert(order_map_t *map, order_id_t id, order_t *order, side_t side, price_t price, order_node_t *node) {
   // 1. Validate inputs (return -1 if invalid)
   if (!map) {
     return -1;
@@ -31,6 +31,7 @@ int om_insert(order_map_t *map, order_id_t id, order_t *order, side_t side, pric
   z->order = order;
   z->price = price;
   z->side = side;
+  z->node = node;
   // 5. Prepend to bucket's linked list (new node becomes head)
   z->next = map->buckets[idx];
   map->buckets[idx] = z;

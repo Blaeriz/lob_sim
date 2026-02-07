@@ -1,12 +1,13 @@
 #ifndef LEVEL_H
 #define LEVEL_H
 
-#include "../common/types.h"
+#include "common/types.h"
 #include "order.h"
 
 typedef struct order_node {
   order_t *order;
   struct order_node *next;
+  struct order_node *prev;
 } order_node_t;
 
 typedef struct {

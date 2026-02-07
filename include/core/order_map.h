@@ -2,6 +2,7 @@
 #define ORDER_MAP_H
 
 #include "core/order.h"
+#include "core/level.h"
 #include <stddef.h>
 
 // What structures do you need?
@@ -12,6 +13,7 @@ typedef struct om_entry {
     order_t *order;           // pointer to the order
     side_t side;              // which side of the book
     price_t price;            // price level (for fast tree lookup)
+    struct order_node *node;
     struct om_entry *next;    // next node in chain
 } om_entry_t;
 
@@ -24,7 +26,7 @@ typedef struct {
 
 // What functions do you need?
 void om_init(order_map_t *map, size_t num_buckets);
-int om_insert(order_map_t *map, order_id_t id, order_t *order, side_t side, price_t price);
+int om_insert(order_map_t *map, order_id_t id, order_t *order, side_t side, price_t price, order_node_t *node);
 om_entry_t *om_find(order_map_t *map, order_id_t id);
 int om_remove(order_map_t *map, order_id_t id);
 void om_free(order_map_t *map);

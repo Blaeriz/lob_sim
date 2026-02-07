@@ -69,8 +69,8 @@ void book_add_order(order_book_t *book, order_t *order) {
     }
   }
 
-  level_push(lvl, order);
-  om_insert(&book->orders, order->id, order, order->side, order->price);
+  order_node_t *node = level_push(lvl, order);
+  om_insert(&book->orders, order->id, order, order->side, order->price, node);
 #ifdef BENCHMARK
   latency_record(&add_order_tracker, time_now_ns() - start);
 #endif
@@ -97,7 +97,7 @@ void book_remove_order(order_book_t *book, order_id_t id) {
   price_level_t *lvl = pt_find(tree, entry->price);
 
   // 4. Remove the order from the level's queue
-  level_remove(lvl, entry->order);
+  level_remove(lvl, entry->node);
   
   // 5. If level is empty, remove from tree and free level
   if (level_is_empty(lvl)) {
