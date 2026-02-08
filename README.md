@@ -295,16 +295,6 @@ Informed traders have private information about fair value:
 4. If `best_bid > fair_value + threshold`: SELL aggressively
 5. Trade probability limits order frequency
 
----
-
-## References
-
-- Harris, L. (2003). *Trading and Exchanges: Market Microstructure for Practitioners*
-- Cont, R., Stoikov, S., & Talreja, R. (2010). *A Stochastic Model for Order Book Dynamics*
-- Avellaneda, M., & Stoikov, S. (2008). *High-frequency trading in a limit order book*
-
----
-
 ## License
 
 MIT License
