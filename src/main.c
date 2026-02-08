@@ -188,28 +188,31 @@ static void print_final_stats(order_book_t* book, config_t* cfg, double elapsed_
   printf("  ║              📊 SIMULATION COMPLETE 📊                 ║\n");
   printf("  ╚════════════════════════════════════════════════════════╝\n\n" COLOR_RESET);
 
-  printf(COLOR_BOLD "  Configuration:\n" COLOR_RESET);
-  printf("    🎲 Noise Traders:    %d\n", cfg->num_noise);
-  printf("    🏦 Market Makers:    %d\n", cfg->num_mm);
-  printf("    🧠 Informed Traders: %d\n", cfg->num_informed);
-  printf("    ⏱  Total Ticks:      %d\n", cfg->total_ticks);
-  printf("\n");
+  // Print side-by-side table with values on same line
+  printf("%-22s | %-22s | %-22s | %-22s\n", "Configuration", "Final Market State", "Trading Activity", "Performance");
+  printf("-------------------------------------------------------------------------------------------------------------\n");
+  printf("%-22s %-6d | %-22s %-6ld | %-22s %-8zu | %-22s %-8.2f\n",
+         "🎲 Noise Traders:", cfg->num_noise,
+         "📈 Mid Price:", mid_price,
+         "🔄 Total Trades:", stats.trade_count,
+         "⏱  Elapsed Time:", elapsed_sec);
+  printf("%-22s %-6d | %-22s %-6ld | %-22s %-8ld | %-22s %-8.0f\n",
+         "🏦 Market Makers:", cfg->num_mm,
+         "📊 Best Bid:", best_bid,
+         "📦 Total Volume:", stats.volume,
+         "🚀 Ticks/Second:", cfg->total_ticks / elapsed_sec);
+  printf("%-22s %-6d | %-22s %-6ld | %-22s %-8s | %-22s %-8s\n",
+         "🧠 Informed Traders:", cfg->num_informed,
+         "📊 Best Ask:", best_ask,
+         "", "",
+         "", "");
+  printf("%-22s %-8d | %-22s %-6ld | %-22s %-8s | %-22s %-8s\n",
+         "⏱  Total Ticks:", cfg->total_ticks,
+         "📏 Spread:", spread,
+         "", "",
+         "", "");
 
-  printf(COLOR_BOLD "  Final Market State:\n" COLOR_RESET);
-  printf("    📈 Mid Price:        %ld\n", mid_price);
-  printf("    📊 Best Bid:         %ld\n", best_bid);
-  printf("    📊 Best Ask:         %ld\n", best_ask);
-  printf("    📏 Spread:           %ld\n", spread);
-  printf(COLOR_BOLD "  Trading Activity:\n" COLOR_RESET);
-  printf("    🔄 Total Trades:     %zu\n", stats.trade_count);
-  printf("    📦 Total Volume:     %ld\n", stats.volume);
   printf("\n");
-
-  printf(COLOR_BOLD "  Performance:\n" COLOR_RESET);
-  printf("    ⏱  Elapsed Time:     %.2f seconds\n", elapsed_sec);
-  printf("    🚀 Ticks/Second:     %.0f\n", cfg->total_ticks / elapsed_sec);
-  printf("\n");
-
   printf(COLOR_GREEN "  ✓ Simulation completed successfully!\n\n" COLOR_RESET);
 }
 
@@ -362,10 +365,26 @@ int main(int argc, char* argv[])
   print_final_stats(&book, &cfg, elapsed_sec);
 
 #ifdef BENCHMARK
-  printf("\n");
-  latency_print(&add_order_tracker, "book_add_order");
-  latency_print(&remove_order_tracker, "book_remove_order");
-  latency_print(&match_order_tracker, "match_order");
+  printf("\n%-14s | %-14s | %-16s | %-12s\n", "Metric", "book_add_order", "book_remove_order", "match_order");
+  printf("---------------------------------------------------------------\n");
+  printf("%-14s | %-14zu | %-16zu | %-12zu\n", "Count", add_order_tracker.count, remove_order_tracker.count, match_order_tracker.count);
+  printf("%-14s | %-14lu | %-16lu | %-12lu\n", "Min (ns)", add_order_tracker.min_ns, remove_order_tracker.min_ns, match_order_tracker.min_ns);
+  printf("%-14s | %-14lu | %-16lu | %-12lu\n", "Max (ns)", add_order_tracker.max_ns, remove_order_tracker.max_ns, match_order_tracker.max_ns);
+  printf("%-14s | %-14.2f | %-16.2f | %-12.2f\n", "Mean (ns)",
+         latency_mean(&add_order_tracker), latency_mean(&remove_order_tracker), latency_mean(&match_order_tracker));
+  printf("%-14s | %-14lu | %-16lu | %-12lu\n", "p50 (ns)",
+         latency_percentile(&add_order_tracker, 0.50),
+         latency_percentile(&remove_order_tracker, 0.50),
+         latency_percentile(&match_order_tracker, 0.50));
+  printf("%-14s | %-14lu | %-16lu | %-12lu\n", "p99 (ns)",
+         latency_percentile(&add_order_tracker, 0.99),
+         latency_percentile(&remove_order_tracker, 0.99),
+         latency_percentile(&match_order_tracker, 0.99));
+
+  // Optionally keep the detailed prints below the table:
+  //   latency_print(&add_order_tracker, "book_add_order");
+  //   latency_print(&remove_order_tracker, "book_remove_order");
+  //   latency_print(&match_order_tracker, "match_order");
 
   latency_free(&add_order_tracker);
   latency_free(&remove_order_tracker);

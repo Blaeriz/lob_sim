@@ -3,5 +3,6 @@
         "stdint.h": "c",
         "types.h": "c",
         "level.h": "c"
-    }
+    },
+    "editor.formatOnSave": true
 }

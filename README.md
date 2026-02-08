@@ -4,6 +4,10 @@ A high-performance **Limit Order Book Simulator** written in C, designed for sim
 
 ---
 
+# DEMO
+
+![LOB Simulator Screenshot](ss/lob_sim_demo.png)
+
 ## Overview
 
 This project implements a complete limit order book matching engine with agent-based market simulation. It models the core infrastructure found in modern electronic exchanges, featuring price-time priority matching, efficient order management, and multiple trader archetypes.
