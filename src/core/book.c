@@ -5,6 +5,7 @@
 #include "core/level_ops.h"
 #include "core/matching.h"
 #include "core/trade.h"
+#include "kdb/kdb_logger.h"
 
 #ifdef BENCHMARK
 #include "bench/latency.h"
@@ -47,6 +48,8 @@ void book_add_order(order_book_t* book, order_t* order)
 #endif
   if (!book || !order)
     return;
+
+  kdb_log_order(order);
 
   // MATCH FIRST
   trade_t trades[100];

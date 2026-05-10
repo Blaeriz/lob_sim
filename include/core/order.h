@@ -23,6 +23,7 @@ typedef struct
   price_t price;
   qty_t qty;
   timestamp_t ts;
+  agent_id_t agent_id;
 } order_t;
 
 #endif

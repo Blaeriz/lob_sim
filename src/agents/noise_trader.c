@@ -7,6 +7,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+extern order_id_t g_next_order_id;
+
 typedef struct
 {
   order_id_t next_order_id;
@@ -85,6 +87,7 @@ static void noise_step(agent_t* agent, order_book_t* book, timestamp_t now)
   order->price = price;
   order->qty = qty;
   order->ts = now;
+  order->agent_id = agent->id;
 
   // SUBMIT
   book_add_order(book, order);

@@ -14,6 +14,7 @@
 #include "core/price_tree.h"
 #include "sim/simulator.h"
 #include "sim/stats.h"
+#include "kdb/kdb_logger.h"
 
 #ifdef BENCHMARK
 #include "bench/latency.h"
@@ -35,6 +36,8 @@ latency_tracker_t match_order_tracker;
 
 #define MAX_DISPLAY_LEVELS 8
 #define MAX_AGENTS 100
+
+order_id_t g_next_order_id = 1;
 
 // Configuration
 typedef struct
@@ -72,6 +75,8 @@ static void print_usage(const char* program)
   printf("  -i, --informed NUM    Number of informed traders (default: 2)\n");
   printf("  -t, --ticks NUM       Total simulation ticks (default: 5000)\n");
   printf("  -q, --quiet           Quiet mode (no progress bar)\n");
+  printf("  --kdb-host HOST       kdb+ host to connect to\n");
+  printf("  --kdb-port PORT       kdb+ port to connect to\n");
   printf("  -h, --help            Show this help message\n");
   printf("\n");
   printf("Examples:\n");
@@ -227,12 +232,17 @@ int main(int argc, char* argv[])
   config_t cfg = {
       .num_noise = 5, .num_mm = 2, .num_informed = 2, .total_ticks = 5000, .visual_mode = 1};
 
+  char* kdb_host = NULL;
+  int kdb_port = 0;
+
   // Parse command-line options
   static struct option long_options[] = {{"noise", required_argument, 0, 'n'},
                                          {"mm", required_argument, 0, 'm'},
                                          {"informed", required_argument, 0, 'i'},
                                          {"ticks", required_argument, 0, 't'},
                                          {"quiet", no_argument, 0, 'q'},
+                                         {"kdb-host", required_argument, 0, 1000},
+                                         {"kdb-port", required_argument, 0, 1001},
                                          {"help", no_argument, 0, 'h'},
                                          {0, 0, 0, 0}};
 
@@ -255,6 +265,12 @@ int main(int argc, char* argv[])
       break;
     case 'q':
       cfg.visual_mode = 0;
+      break;
+    case 1000:
+      kdb_host = optarg;
+      break;
+    case 1001:
+      kdb_port = atoi(optarg);
       break;
     case 'h':
       print_usage(argv[0]);
@@ -286,6 +302,14 @@ int main(int argc, char* argv[])
   order_book_t book;
   book_init(&book);
   simulator_init(&book);
+
+  if (kdb_host && kdb_port > 0)
+  {
+    if (kdb_logger_init(kdb_host, kdb_port) != 0)
+    {
+      fprintf(stderr, "Failed to initialize kdb+ logger.\n");
+    }
+  }
 
   // Create agent arrays
   agent_t** noise_agents = malloc(cfg.num_noise * sizeof(agent_t*));
@@ -411,6 +435,7 @@ int main(int argc, char* argv[])
 
   simulator_free();
   book_free(&book);
+  kdb_logger_teardown();
 
   return 0;
 }

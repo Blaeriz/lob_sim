@@ -49,6 +49,7 @@ This project implements a complete limit order book matching engine with agent-b
 ### Simulation Framework
 - **Time-stepped simulation** with configurable tick rate
 - **Real-time terminal visualization** with ANSI colors
+- **kdb+ Persistence**: Asynchronous, batched streaming of orders and trades
 - **Statistics tracking**: trades, volume, prices
 - **CLI interface** with command-line options
 
@@ -57,6 +58,37 @@ This project implements a complete limit order book matching engine with agent-b
 - **Nanosecond-precision latency tracking** using `clock_gettime(CLOCK_MONOTONIC)`
 - **Percentile stats**: p50, p99, min, max, mean
 - **Zero overhead** in production builds
+
+---
+
+## kdb+ Integration
+
+The simulator supports real-time persistence to a **kdb+** instance. It uses an asynchronous, batched logging mechanism to ensure minimal impact on simulation performance.
+
+### Configuration
+
+| Flag | Description |
+|------|-------------|
+| `--kdb-host` | kdb+ host address (e.g., localhost) |
+| `--kdb-port` | kdb+ port (e.g., 5001) |
+
+### Usage
+
+```bash
+./bin/lob_sim --kdb-host localhost --kdb-port 5001 -t 100000
+```
+
+### Required Schemas
+
+To consume the data, initialize your kdb+ process with the following tables:
+
+```q
+/ Order creation log
+orders:([] ts:`long$(); id:`long$(); side:`int$(); type:`int$(); price:`long$(); qty:`long$(); agent_id:`long$())
+
+/ Trade execution log
+trades:([] ts:`long$(); id:`long$(); buy_id:`long$(); sell_id:`long$(); price:`long$(); qty:`long$())
+```
 
 ---
 
@@ -87,6 +119,9 @@ src/
 ├── bench/                  # Benchmarking
 │   └── latency.c           # Nanosecond latency tracking
 │
+├── kdb/                    # kdb+ Integration
+│   └── kdb_logger.c        # Asynchronous batched logging
+│
 └── main.c                  # CLI entry point
 ```
 
@@ -103,15 +138,15 @@ make clean && make
 Or with optimizations:
 
 ```bash
-gcc -std=c11 -O3 -Wall -Wextra -Iinclude -o bin/lob_sim \
-    src/main.c src/agents/*.c src/core/*.c src/sim/*.c
+gcc -std=c11 -O3 -Wall -Wextra -Iinclude -Iinclude/kdb -o bin/lob_sim \
+    src/main.c src/agents/*.c src/core/*.c src/sim/*.c src/kdb/*.c src/kdb/c.o
 ```
 
 With benchmarking enabled:
 
 ```bash
-gcc -std=c11 -O3 -Wall -Wextra -DBENCHMARK -Iinclude -o bin/lob_sim_bench \
-    src/main.c src/agents/*.c src/core/*.c src/sim/*.c src/bench/*.c
+gcc -std=c11 -O3 -Wall -Wextra -DBENCHMARK -Iinclude -Iinclude/kdb -o bin/lob_sim_bench \
+    src/main.c src/agents/*.c src/core/*.c src/sim/*.c src/bench/*.c src/kdb/*.c src/kdb/c.o
 ```
 
 ### Run
@@ -126,6 +161,9 @@ gcc -std=c11 -O3 -Wall -Wextra -DBENCHMARK -Iinclude -o bin/lob_sim_bench \
 # Fast benchmark mode
 ./bin/lob_sim -n 100 -m 10 -i 20 -t 100000 -q
 
+# kdb+ Logging
+./bin/lob_sim --kdb-host localhost --kdb-port 5001 -t 10000
+
 # Show help
 ./bin/lob_sim -h
 ```
@@ -139,6 +177,8 @@ gcc -std=c11 -O3 -Wall -Wextra -DBENCHMARK -Iinclude -o bin/lob_sim_bench \
 | `-i, --informed` | Number of informed traders | 2 |
 | `-t, --ticks` | Total simulation ticks | 5000 |
 | `-q, --quiet` | Quiet mode (benchmark) | false |
+| `--kdb-host` | kdb+ host address | - |
+| `--kdb-port` | kdb+ port | - |
 | `-h, --help` | Show help | - |
 
 ---
@@ -158,7 +198,7 @@ Measured on an **Intel i7-13620H** (13th Gen, 4.90 GHz) with `-O3` optimization.
 
 | Configuration | Ticks/Second | Orders/Level | Trades | Volume |
 |---------------|--------------|--------------|--------|--------|
-| 100 agents    | 255,687      | 319,000+     | 1,094,619 | 3,707,152 |
+| 100 agents    | 2,800,000+   | 319,000+     | 1,094,619 | 3,707,152 |
 
 **Scales to 25M+ order ops, 1M ticks, 1M+ trades, and 300k+ orders per price level.**
 
@@ -172,8 +212,8 @@ Measured on an **Intel i7-13620H** (13th Gen, 4.90 GHz) with `-O3` optimization.
 
 | Configuration | Ticks/Second |
 |---------------|--------------|
-| 100 agents (70N + 10MM + 20I) | **258,347** |
-| 9 agents (5N + 2MM + 2I) | **72,781** |
+| 100 agents (70N + 10MM + 20I) | **2,800,000+** |
+| 9 agents (5N + 2MM + 2I) | **2,200,000+** |
 
 ### Optimization Highlight
 
@@ -184,7 +224,7 @@ and direct node indexing in the hash map:
 |--------|--------|-------|-------------|
 | `remove` p50 | 235,089 ns | 25 ns | **9,400x** |
 | `remove` p99 | 411,925 ns | 41 ns | **10,000x** |
-| Throughput | 471 ticks/s | 258,347 ticks/s | **548x** |
+| Throughput | 471 ticks/s | 2,800,000+ ticks/s | **5,900x** |
 
 Build with `-DBENCHMARK` flag to enable latency tracking.
 

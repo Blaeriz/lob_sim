@@ -7,6 +7,8 @@
 #include <stdlib.h>
 #include <time.h>
 
+extern order_id_t g_next_order_id;
+
 typedef struct
 {
   order_id_t next_order_id;
@@ -94,6 +96,7 @@ static void mm_step(agent_t* agent, order_book_t* book, timestamp_t now)
       bid->price = bid_price;
       bid->qty = state->order_qty;
       bid->ts = now;
+      bid->agent_id = agent->id;
 
       book_add_order(book, bid);
       state->active_bid_id = bid->id;
@@ -112,6 +115,7 @@ static void mm_step(agent_t* agent, order_book_t* book, timestamp_t now)
       ask->price = ask_price;
       ask->qty = state->order_qty;
       ask->ts = now;
+      ask->agent_id = agent->id;
 
       book_add_order(book, ask);
       state->active_ask_id = ask->id;

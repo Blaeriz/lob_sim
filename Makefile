@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -std=c11 -O3 -Wall -Wextra -Iinclude
+CFLAGS = -std=c11 -O3 -Wall -Wextra -Iinclude -Iinclude/kdb
 SRCS = $(wildcard src/*.c src/*/*.c src/*/*/*.c)
 BUILD_DIR = build
 BIN_DIR = bin
@@ -10,7 +10,7 @@ all: $(TARGET)
 
 $(TARGET): $(OBJS)
 	@mkdir -p $(BIN_DIR)
-	$(CC) $(CFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) -o $@ $^ src/kdb/c.o
 
 $(BUILD_DIR)/%.o: src/%.c
 	@mkdir -p $(dir $@)
@@ -22,12 +22,12 @@ clean:
 .PHONY: all clean
 
 DEBUG_TARGET = $(BIN_DIR)/lob_sim_debug
-DEBUG_CFLAGS = -std=c11 -O0 -g -Wall -Wextra -Iinclude
+DEBUG_CFLAGS = -std=c11 -O0 -g -Wall -Wextra -Iinclude -Iinclude/kdb
 debug: $(DEBUG_TARGET)
 
 $(DEBUG_TARGET): $(OBJS)
 	@mkdir -p $(BIN_DIR)
-	$(CC) $(DEBUG_CFLAGS) -o $@ $^
+	$(CC) $(DEBUG_CFLAGS) -o $@ $^ src/kdb/c.o
 
 run: $(TARGET)
 	./$(TARGET)
@@ -49,7 +49,7 @@ bench: $(BENCH_TARGET)
 
 $(BENCH_TARGET): $(BENCH_OBJS)
 	@mkdir -p $(BIN_DIR)
-	$(CC) $(CFLAGS) -DBENCHMARK -o $@ $^
+	$(CC) $(CFLAGS) -DBENCHMARK -o $@ $^ src/kdb/c.o
 
 $(BENCH_BUILD_DIR)/%.o: src/%.c
 	@mkdir -p $(dir $@)

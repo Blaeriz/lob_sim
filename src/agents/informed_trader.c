@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include <time.h>
 
+extern order_id_t g_next_order_id;
+
 typedef struct
 {
   order_id_t next_order_id;
@@ -65,6 +67,7 @@ static void informed_step(agent_t* agent, order_book_t* book, timestamp_t now)
     order->price = best_ask;
     order->qty = state->order_qty;
     order->ts = now;
+    order->agent_id = agent->id;
     book_add_order(book, order);
     return;
   }

@@ -1,6 +1,7 @@
 #include "core/matching.h"
 #include "core/level_ops.h"
 #include "sim/stats.h"
+#include "kdb/kdb_logger.h"
 #include <stdlib.h>
 
 #ifdef BENCHMARK
